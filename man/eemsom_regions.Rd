@@ -7,7 +7,7 @@
 \usage{
 eemsom_regions(
   som,
-  k = NULL,
+  k = 2:9,
   method = "planes",
   dim = "auto",
   cluster_method = "complete",
@@ -20,7 +20,7 @@ eemsom_regions(
 \arguments{
 \item{som}{object of class eemsom, see \code{\link{eemsom}}}
 
-\item{k}{number of regions. If NULL (default), k is chosen from 2 to 9 by the highest mean silhouette width.}
+\item{k}{number of regions (a single number) or candidates (a vector, default 2 to 9) from which the number with the highest mean silhouette width is chosen. NULL is the same as \code{2:9}.}
 
 \item{method}{\code{"planes"} (default) or \code{"cormat"}, see details}
 
@@ -39,7 +39,7 @@ object of class eemsom_regions, a list containing
 \itemize{
   \item regions: data frame with columns ex, em and region
   \item k: number of regions
-  \item kselect: data frame with criteria for k from 2 to 9 (see \code{\link{eemsom_kselect}}), NULL if k was given
+  \item kselect: data frame with criteria for the candidates (see \code{\link{eemsom_kselect}}), NULL if k was a single number
   \item rsom: R-mode self-organising map of class kohonen
   \item unit_regions: region of each unit of the R-mode map
   \item method, cluster_method, seed: settings used
@@ -63,7 +63,10 @@ data(eem_list)
 som <- eemsom(eem_list, rlen = 100)
 regions <- eemsom_regions(som, dim = c(8, 8))
 regions
+regions$kselect
 ggeem(regions)
+# fixed number of regions
+eemsom_regions(som, k = 3, dim = c(8, 8))
 }
 \references{
 Barreto-Sanz, M. A., Perez-Uribe, A. (2007). Improving the Correlation Hunting in a Large Quantity of SOM Component Planes. In: Artificial Neural Networks - ICANN 2007, Lecture Notes in Computer Science 4669, 379-388. \doi{10.1007/978-3-540-74695-9_39}

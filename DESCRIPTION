@@ -1,7 +1,7 @@
 Package: staRsom
 Type: Package
 Title: Self-Organising Maps for EEMs from DOM
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: person("Matthias", "Pucher", email = "matthias.pucher@ecosight.at",
                   role = c("aut", "cre"), comment = c(ORCID = "0000-0002-9093-2199"))
 Description: Self-organising maps (SOM, Kohonen 2013) <doi:10.1016/j.neunet.2012.09.018> for

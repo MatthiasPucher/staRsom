@@ -63,6 +63,7 @@ ggeem.eemsom <- function(data, fill_max = FALSE, units = NULL, denormalise = FAL
 #' }
 #' @param colour optional vector with one value per sample (e.g. sampling site from metadata) used to colour the samples with \code{type = "samples"}
 #' @param labels logical, whether sample names are shown with \code{type = "samples"}
+#' @param unit_labels logical, whether the numbers of the units are shown. They are used by \code{\link{ggeem.eemsom}}, \code{\link{eemsom_codes}} and \code{\link{eemsom_samples}}.
 #'
 #' @details Neighbours are defined like in \code{\link[kohonen]{unit.distances}}: six units on hexagonal maps, eight units including the diagonals on rectangular maps.
 #'
@@ -83,10 +84,10 @@ ggeem.eemsom <- function(data, fill_max = FALSE, units = NULL, denormalise = FAL
 #' data(eem_list)
 #'
 #' som <- eemsom(eem_list, rlen = 100)
-#' eemsom_plot_map(som)
+#' eemsom_plot_map(som, unit_labels = TRUE)
 #' eemsom_plot_map(som, type = "umatrix")
 #' eemsom_plot_map(som, type = "samples", colour = substr(eem_names(eem_list), 1, 2), labels = TRUE)
-eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE){
+eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE, unit_labels = FALSE){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   type <- match.arg(type, c("counts", "umatrix", "quality", "cluster", "samples"))
   grid <- som$som$grid
@@ -126,6 +127,11 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE)
       plot <- plot + geom_point(data = smp)
     }
     if(labels) plot <- plot + geom_text(data = smp, aes(label = sample), size = 2.5, vjust = -0.8)
+  }
+  if(unit_labels){
+    # unit numbers in the upper part of the units, so they do not overlap with the samples
+    units <- data.frame(unit = seq_len(nu), x = grid$pts[, 1], y = grid$pts[, 2] + 0.38)
+    plot <- plot + geom_text(data = units, aes(label = unit), size = 3, colour = "grey30")
   }
   plot
 }

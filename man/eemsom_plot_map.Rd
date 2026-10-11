@@ -4,7 +4,13 @@
 \alias{eemsom_plot_map}
 \title{Plot a self-organising map}
 \usage{
-eemsom_plot_map(som, type = "counts", colour = NULL, labels = FALSE)
+eemsom_plot_map(
+  som,
+  type = "counts",
+  colour = NULL,
+  labels = FALSE,
+  unit_labels = FALSE
+)
 }
 \arguments{
 \item{som}{object of class eemsom, see \code{\link{eemsom}}}
@@ -21,6 +27,8 @@ eemsom_plot_map(som, type = "counts", colour = NULL, labels = FALSE)
 \item{colour}{optional vector with one value per sample (e.g. sampling site from metadata) used to colour the samples with \code{type = "samples"}}
 
 \item{labels}{logical, whether sample names are shown with \code{type = "samples"}}
+
+\item{unit_labels}{logical, whether the numbers of the units are shown. They are used by \code{\link{ggeem.eemsom}}, \code{\link{eemsom_codes}} and \code{\link{eemsom_samples}}.}
 }
 \value{
 a ggplot object
@@ -39,7 +47,7 @@ Ejarque-Gonzalez and Butturini (2014) used the U-matrix to find regions of simil
 data(eem_list)
 
 som <- eemsom(eem_list, rlen = 100)
-eemsom_plot_map(som)
+eemsom_plot_map(som, unit_labels = TRUE)
 eemsom_plot_map(som, type = "umatrix")
 eemsom_plot_map(som, type = "samples", colour = substr(eem_names(eem_list), 1, 2), labels = TRUE)
 }

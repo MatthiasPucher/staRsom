@@ -117,10 +117,10 @@ eem_list_reduced <- eem_exclude(eem_list, list(ex = eem_list[[1]]$ex[c(FALSE, TR
 eemsom_samples(som)
 ```
 
-`eemsom_plot_map()` shows different properties of the units. The number of samples per unit shows how the samples are distributed. The U-matrix shows the distance of each prototype to its neighbours. Units with high values separate groups of similar units, low values indicate regions of similar units [@ejarque_som_2014].
+`eemsom_plot_map()` shows different properties of the units; `unit_labels = TRUE` adds the unit numbers used in the other functions. The number of samples per unit shows how the samples are distributed. The U-matrix shows the distance of each prototype to its neighbours. Units with high values separate groups of similar units, low values indicate regions of similar units [@ejarque_som_2014].
 
 ```{r, fig.show = "hold", out.width = "48%", fig.width = 4, fig.height = 5}
-eemsom_plot_map(som, type = "counts")
+eemsom_plot_map(som, type = "counts", unit_labels = TRUE)
 eemsom_plot_map(som, type = "umatrix")
 ```
 
@@ -179,7 +179,7 @@ table(cluster = eemsom_samples(som)$cluster)
 
 # Fluorescence regions
 
-`eemsom_regions()` groups wavelength pairs whose component planes are correlated. Each region is assumed to represent a fluorescence component [@ejarque_som_2014]. If `k` is not given, it is chosen by the highest mean silhouette width. The default `method = "planes"` is a fast equivalent to the correlation matrix used by Barreto-Sanz and Pérez-Uribe [-@barreto_correlation_2007] (`method = "cormat"`).
+`eemsom_regions()` groups wavelength pairs whose component planes are correlated. Each region is assumed to represent a fluorescence component [@ejarque_som_2014]. By default, `k` is chosen from 2 to 9 by the highest mean silhouette width; a single number fixes it. The default `method = "planes"` is a fast equivalent to the correlation matrix used by Barreto-Sanz and Pérez-Uribe [-@barreto_correlation_2007] (`method = "cormat"`).
 
 ```{r}
 regions <- eemsom_regions(som)

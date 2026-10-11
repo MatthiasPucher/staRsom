@@ -3,7 +3,7 @@
 #' @description Wavelength pairs with similar behaviour across the units of a self-organising map are grouped into regions. Each region is assumed to represent a fluorescence component (Ejarque-Gonzalez and Butturini 2014). The component planes are arranged on a second self-organising map ("R-mode") and its units are clustered hierarchically.
 #'
 #' @param som object of class eemsom, see \code{\link{eemsom}}
-#' @param k number of regions. If NULL (default), k is chosen from 2 to 9 by the highest mean silhouette width.
+#' @param k number of regions (a single number) or candidates (a vector, default 2 to 9) from which the number with the highest mean silhouette width is chosen. NULL is the same as \code{2:9}.
 #' @param method \code{"planes"} (default) or \code{"cormat"}, see details
 #' @param dim size of the R-mode map, either \code{"auto"} (default) or a numeric vector \code{c(xdim, ydim)}, see \code{\link{eemsom}}
 #' @param cluster_method clustering method of the R-mode units, see \code{\link{eemsom_cluster}}
@@ -22,7 +22,7 @@
 #' \itemize{
 #'   \item regions: data frame with columns ex, em and region
 #'   \item k: number of regions
-#'   \item kselect: data frame with criteria for k from 2 to 9 (see \code{\link{eemsom_kselect}}), NULL if k was given
+#'   \item kselect: data frame with criteria for the candidates (see \code{\link{eemsom_kselect}}), NULL if k was a single number
 #'   \item rsom: R-mode self-organising map of class kohonen
 #'   \item unit_regions: region of each unit of the R-mode map
 #'   \item method, cluster_method, seed: settings used
@@ -42,11 +42,16 @@
 #' som <- eemsom(eem_list, rlen = 100)
 #' regions <- eemsom_regions(som, dim = c(8, 8))
 #' regions
+#' regions$kselect
 #' ggeem(regions)
-eemsom_regions <- function(som, k = NULL, method = "planes", dim = "auto", cluster_method = "complete", seed = 42, ...){
+#' # fixed number of regions
+#' eemsom_regions(som, k = 3, dim = c(8, 8))
+eemsom_regions <- function(som, k = 2:9, method = "planes", dim = "auto", cluster_method = "complete", seed = 42, ...){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   eempf_som_unsupported(som, "eemsom_regions")
   method <- match.arg(method, c("planes", "cormat"))
+  if(is.null(k)) k <- 2:9
+  if(!is.numeric(k) || length(k) < 1 || any(k < 1)) stop("k needs to be a number of regions or a vector of candidates!")
   codes <- som$som$codes[[1]]
   if(nrow(codes) < 3) stop("The self-organising map needs at least 3 units!")
   planes <- t(codes)
@@ -70,10 +75,10 @@ eemsom_regions <- function(som, k = NULL, method = "planes", dim = "auto", clust
   rsom <- with_seed(seed, do.call(kohonen::som, args))
   rcodes <- rsom$codes[[1]]
   kselect <- NULL
-  if(is.null(k)){
-    kselect <- eemsom_kcriteria(rcodes, k = 2:9, method = cluster_method, seed = seed)
+  if(length(k) > 1){
+    kselect <- eemsom_kcriteria(rcodes, k = k, method = cluster_method, seed = seed)
     k <- kselect$k[which.max(kselect$silhouette)]
-  } else if(!is.numeric(k) || length(k) != 1 || k < 1 || k > nrow(rcodes)){
+  } else if(k > nrow(rcodes)){
     stop("k needs to be a number between 1 and the number of units of the R-mode map (", nrow(rcodes), ")!")
   }
   unit_regions <- eemsom_clusterunits(rcodes, k = k, method = cluster_method, seed = seed)

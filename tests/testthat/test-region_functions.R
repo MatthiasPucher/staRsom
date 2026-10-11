@@ -18,6 +18,18 @@ test_that("number of regions can be set and results are reproducible", {
   expect_identical(r1$regions, r2$regions)
   expect_error(eemsom_regions(som_test, dim = 5), "dim")
   expect_error(eemsom_regions(som_test, k = 50, dim = c(3, 3), rlen = 5), "R-mode")
+  expect_error(eemsom_regions(som_test, k = "a", dim = c(3, 3), rlen = 5), "candidates")
+})
+
+test_that("candidates for the number of regions can be given", {
+  r <- eemsom_regions(som_test, k = 2:4, dim = c(5, 5), rlen = 20)
+  expect_equal(r$kselect$k, 2:4)
+  expect_true(r$k %in% 2:4)
+  expect_equal(r$k, r$kselect$k[which.max(r$kselect$silhouette)])
+  r_null <- eemsom_regions(som_test, k = NULL, dim = c(5, 5), rlen = 20)
+  r_default <- eemsom_regions(som_test, dim = c(5, 5), rlen = 20)
+  expect_equal(r_null$kselect, r_default$kselect)
+  expect_equal(r_default$kselect$k, 2:9)
 })
 
 test_that("regions of planes and correlation matrix are similar", {

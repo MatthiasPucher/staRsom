@@ -18,6 +18,12 @@ test_that("map plots are created for all types", {
   expect_error(eemsom_plot_map(som_test, type = "samples", colour = 1:2), "colour")
   p <- eemsom_plot_map(som_test)
   expect_equal(sum(p$data$value) / 6, length(eem_list))
+  expect_false(any(sapply(p$layers, function(l) inherits(l$geom, "GeomText"))))
+  pu <- eemsom_plot_map(som_test, unit_labels = TRUE)
+  text_layers <- Filter(function(l) inherits(l$geom, "GeomText"), pu$layers)
+  expect_length(text_layers, 1)
+  expect_equal(text_layers[[1]]$data$unit, seq_len(nrow(som_test$som$codes[[1]])))
+  expect_s3_class(eemsom_plot_map(som_clustered, type = "samples", labels = TRUE, unit_labels = TRUE), "ggplot")
 })
 
 test_that("rectangular maps are plotted", {
