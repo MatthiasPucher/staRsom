@@ -43,7 +43,7 @@
 #' regions
 #' ggeem(regions)
 eemsom_regions <- function(som, k = NULL, method = "planes", dim = "auto", cluster_method = "complete", seed = 42, ...){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   eempf_som_unsupported(som, "eemsom_regions")
   method <- match.arg(method, c("planes", "cormat"))
   codes <- som$som$codes[[1]]
@@ -51,7 +51,8 @@ eemsom_regions <- function(som, k = NULL, method = "planes", dim = "auto", clust
   planes <- t(codes)
   planes <- planes - rowMeans(planes)
   len <- sqrt(rowSums(planes^2))
-  valid <- len > sqrt(.Machine$double.eps) * max(len)
+  # constant component planes (up to rounding errors) have no correlation
+  valid <- len > 1e-8 * max(len)
   planes <- planes[valid, , drop = FALSE] / len[valid]
   if(method == "cormat"){
     if(nrow(planes) > 1500) warning("method = \"cormat\" with ", nrow(planes), " wavelength pairs is slow. Please consider method = \"planes\" or a lower resolution of the EEMs.")
@@ -149,19 +150,21 @@ eemsom_fri <- function(eem_list, regions){
   ex <- attr(mat, "ex")
   em <- attr(mat, "em")
   reg <- regions$regions
-  if(length(ex) * length(em) != nrow(reg) || !isTRUE(all.equal(rep(ex, each = length(em)), reg$ex)) || !isTRUE(all.equal(rep(em, times = length(ex)), reg$em))) stop("The wavelengths of eem_list differ from the regions! Please consider eem_red2smallest() or eem_extend2largest().")
+  same_wl <- isTRUE(all.equal(ex, unique(reg$ex))) & isTRUE(all.equal(em, unique(reg$em)))
+  if(!same_wl) stop("The wavelengths of eem_list differ from the regions! Please consider eem_red2smallest() or eem_extend2largest().")
   area <- rep(eem_cellwidth(ex), each = length(em)) * rep(eem_cellwidth(em), times = length(ex))
   rs <- sort(unique(stats::na.omit(reg$region)))
   total_area <- sum(area[!is.na(reg$region)])
-  vols <- vapply(rs, function(r){
+  vols <- sapply(rs, function(r){
     idx <- which(reg$region == r)
-    vapply(seq_len(nrow(mat)), function(s){
-      ok <- idx[!is.na(mat[s, idx])]
-      if(length(ok) == 0) return(NA_real_)
-      sum(mat[s, ok] * area[ok]) * total_area / sum(area[ok])
-    }, numeric(1))
-  }, numeric(nrow(mat)))
+    x <- mat[, idx, drop = FALSE]
+    # area of each wavelength pair, missing values do not count
+    a <- matrix(area[idx], nrow = nrow(x), ncol = length(idx), byrow = TRUE)
+    a[is.na(x)] <- NA
+    rowSums(x * a, na.rm = TRUE) * total_area / rowSums(a, na.rm = TRUE)
+  })
   vols <- matrix(vols, nrow = nrow(mat))
+  vols[!is.finite(vols)] <- NA
   colnames(vols) <- paste0("region_", rs)
   data.frame(sample = rownames(mat), vols, stringsAsFactors = FALSE, row.names = NULL)
 }

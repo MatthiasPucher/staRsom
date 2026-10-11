@@ -62,7 +62,6 @@ object of class eemsom, a list containing
   \item normalise, norm_factors: normalisation method and factors
   \item na: handling of missing values
   \item clusters: cluster of each unit, NULL until the units are clustered
-  \item seed: seed used for the calculation
   \item settings: arguments used for \code{\link[kohonen]{som}}, needed by \code{\link{eemsom_stability}}
 }
 }

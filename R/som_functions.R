@@ -33,7 +33,6 @@
 #'   \item normalise, norm_factors: normalisation method and factors
 #'   \item na: handling of missing values
 #'   \item clusters: cluster of each unit, NULL until the units are clustered
-#'   \item seed: seed used for the calculation
 #'   \item settings: arguments used for \code{\link[kohonen]{som}}, needed by \code{\link{eemsom_stability}}
 #' }
 #' @export
@@ -64,7 +63,7 @@ eemsom <- function(eem_list, dim = "auto", topo = "hexagonal", normalise = "sd",
   if(na == "keep" & is.null(extra$maxNA.fraction)) extra$maxNA.fraction <- 1 - 1 / ncol(mat)
   trained <- do.call(eemsom_train, c(list(mat = mat, dim = dim, topo = topo, rlen = rlen, alpha = alpha, mode = mode, init = init, seed = seed, cores = cores, verbose = verbose, varname = "wavelength pairs"), extra))
   eemsom <- list(som = trained$som, ex = attr(mat, "ex"), em = attr(mat, "em"), keep = attr(mat, "keep"), samples = attr(mat, "samples"),
-                 normalise = attr(mat, "normalise"), norm_factors = attr(mat, "norm_factors"), na = na, clusters = NULL, seed = seed,
+                 normalise = attr(mat, "normalise"), norm_factors = attr(mat, "norm_factors"), na = na, clusters = NULL,
                  settings = trained$settings)
   class(eemsom) <- "eemsom"
   eemsom
@@ -125,11 +124,24 @@ print.eemsom <- function(x, ...){
 #' som <- eemsom(eem_list, rlen = 100)
 #' eemsom_samples(som)
 eemsom_samples <- function(som){
-  stopifnot(inherits(som, "eemsom"))
-  unit <- som$som$unit.classif
-  cluster <- if(is.null(som$clusters)) rep(NA, length(unit)) else som$clusters[unit]
-  data.frame(sample = som$samples, unit = unit, x = som$som$grid$pts[unit, 1], y = som$som$grid$pts[unit, 2],
-             distance = sqrt(som$som$distances), cluster = cluster, stringsAsFactors = FALSE)
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
+  eemsom_unittable(som, som$samples, som$som$unit.classif, som$som$distances)
+}
+
+#' Table of samples and their units
+#'
+#' @param som object of class eemsom
+#' @param samples sample names
+#' @param unit best matching unit of each sample
+#' @param sqdist squared distance between each sample and its prototype
+#'
+#' @return data frame, see eemsom_samples
+#' @noRd
+eemsom_unittable <- function(som, samples, unit, sqdist){
+  pts <- som$som$grid$pts
+  cluster <- if(is.null(som$clusters)) NA else som$clusters[unit]
+  data.frame(sample = samples, unit = unit, x = pts[unit, 1], y = pts[unit, 2],
+             distance = sqrt(sqdist), cluster = cluster, stringsAsFactors = FALSE)
 }
 
 #' Prototype EEMs of a self-organising map
@@ -151,14 +163,14 @@ eemsom_samples <- function(som){
 #' codes <- eemsom_codes(som)
 #' ggeem(codes)
 eemsom_codes <- function(som, denormalise = FALSE){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   codes <- som$som$codes[[1]]
   norm_factors <- NULL
   if(denormalise){
     unit <- som$som$unit.classif
-    norm_factors <- vapply(seq_len(nrow(codes)), function(u){
+    norm_factors <- sapply(seq_len(nrow(codes)), function(u){
       if(any(unit == u)) mean(som$norm_factors[unit == u]) else mean(som$norm_factors)
-    }, numeric(1))
+    })
   }
   if(inherits(som, "eempf_som")){
     # prototype EEM = sum of PARAFAC components weighted by the prototype loadings
@@ -192,16 +204,15 @@ eemsom_codes <- function(som, denormalise = FALSE){
 #' som <- eemsom(eem_list, rlen = 100)
 #' eemsom_quality(som)
 eemsom_quality <- function(som){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   mat <- som$som$data[[1]]
   codes <- som$som$codes[[1]]
   d <- eemsom_distmat(mat, codes)
+  dmin <- apply(d, 1, min)
   bmu2 <- t(apply(d, 1, function(r) order(r)[1:2]))
-  udist <- unit.distances(som$som$grid)
-  te <- mean(udist[bmu2] > 1.01)
-  ss_res <- sum(apply(d, 1, min))
+  te <- mean(eemsom_unitdist(som$som$grid)[bmu2] > 1)
   ss_tot <- sum(sweep(mat, 2, colMeans(mat, na.rm = TRUE))^2, na.rm = TRUE)
-  data.frame(quantisation_error = mean(sqrt(apply(d, 1, min))), topographic_error = te, explained_variance = 1 - ss_res / ss_tot)
+  data.frame(quantisation_error = mean(sqrt(dmin)), topographic_error = te, explained_variance = 1 - sum(dmin) / ss_tot)
 }
 
 #' Squared Euclidean distances between samples and codebook vectors
@@ -217,6 +228,16 @@ eemsom_distmat <- function(mat, codes){
     colSums((t(codes[, ok, drop = FALSE]) - s[ok])^2)
   })) %>%
     matrix(nrow = nrow(mat))
+}
+
+#' Distances between the units of a map
+#'
+#' @param grid object of class somgrid
+#'
+#' @return matrix, distances are rounded because neighbours on hexagonal maps are only approximately 1 apart
+#' @noRd
+eemsom_unitdist <- function(grid){
+  round(unit.distances(grid), 6)
 }
 
 #' Map size according to Vesanto and Alhoniemi (2000)
@@ -260,8 +281,10 @@ eemsom_pca <- function(mat){
 eemsom_pcainit <- function(mat, grid){
   pca <- eemsom_pca(mat)
   pts <- grid$pts
-  coords <- apply(pts, 2, function(p) if(diff(range(p)) > 0) (p - min(p)) / diff(range(p)) * 2 - 1 else p * 0)
-  coords <- coords[, order(apply(pts, 2, function(p) diff(range(p))), decreasing = TRUE), drop = FALSE]
+  # unit coordinates scaled to [-1, 1]
+  coords <- apply(pts, 2, function(p) if(diff(range(p)) > 0) 2 * (p - min(p)) / diff(range(p)) - 1 else p * 0)
+  # the longer side of the map follows the first principal component
+  if(diff(range(pts[, 2])) > diff(range(pts[, 1]))) coords <- coords[, 2:1]
   k <- ncol(pca$v)
   init <- matrix(pca$centre, nrow = nrow(pts), ncol = ncol(mat), byrow = TRUE) +
     coords[, seq_len(k), drop = FALSE] %*% (t(pca$v) * pca$d / sqrt(pca$n - 1))

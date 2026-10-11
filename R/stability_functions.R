@@ -21,10 +21,10 @@
 #'
 #' @return object of class eemsom_stability, a list containing
 #' \itemize{
-#'   \item quantisation: data frame with columns rep, left_out (only for \code{type = "loo"}) and ss_intra
+#'   \item quantisation: data frame with columns rep, ss_intra and left_out (only for \code{type = "loo"})
 #'   \item neighbourhood: data frame with columns sample1, sample2 and stability
 #'   \item random: probability of two samples being neighbours on a random map
-#'   \item nmaps, type, nrep, radius, seed: settings and number of maps
+#'   \item nmaps, type, radius: number of maps and settings
 #' }
 #' @export
 #'
@@ -51,7 +51,7 @@
 #' eemsom_plot_stability(stab)
 #' }
 eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radius = 1, seed = 42, cores = 1, verbose = FALSE){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   eempf_som_unsupported(som, "eemsom_stability")
   type <- match.arg(type, c("bootstrap", "loo"))
   if(is.null(som$settings)) stop("som does not contain its settings, please calculate it again with eemsom()!")
@@ -87,8 +87,7 @@ eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radiu
   } else {
     codes <- with_seed(seed, lapply(tasks, eemsom_stabilityworker, mat = mat, args = args))
   }
-  udist <- unit.distances(grid)
-  near <- udist <= radius + 1e-6
+  near <- eemsom_unitdist(grid) <= radius
   ss_intra <- numeric(length(codes))
   pairs <- utils::combn(n, 2)
   neigh <- numeric(ncol(pairs))
@@ -99,11 +98,11 @@ eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radiu
     neigh <- neigh + near[cbind(bmu[pairs[1, ]], bmu[pairs[2, ]])]
   }
   quantisation <- data.frame(rep = seq_along(codes), ss_intra = ss_intra)
-  if(type == "loo") quantisation <- data.frame(rep = seq_along(codes), left_out = vapply(tasks, `[[`, character(1), "left_out"), ss_intra = ss_intra)
-  res <- list(quantisation = quantisation,
-              neighbourhood = data.frame(sample1 = rownames(mat)[pairs[1, ]], sample2 = rownames(mat)[pairs[2, ]], stability = neigh / length(codes), stringsAsFactors = FALSE),
-              random = mean(rowSums(near)) / nrow(udist),
-              nmaps = length(codes), type = type, nrep = nrep, radius = radius, seed = seed)
+  if(type == "loo") quantisation$left_out <- sapply(tasks, `[[`, "left_out")
+  neighbourhood <- data.frame(sample1 = rownames(mat)[pairs[1, ]], sample2 = rownames(mat)[pairs[2, ]],
+                              stability = neigh / length(codes), stringsAsFactors = FALSE)
+  res <- list(quantisation = quantisation, neighbourhood = neighbourhood, random = mean(near),
+              nmaps = length(codes), type = type, radius = radius)
   class(res) <- "eemsom_stability"
   res
 }

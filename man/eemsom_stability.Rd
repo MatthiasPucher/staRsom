@@ -42,10 +42,10 @@ eemsom_stability(
 \value{
 object of class eemsom_stability, a list containing
 \itemize{
-  \item quantisation: data frame with columns rep, left_out (only for \code{type = "loo"}) and ss_intra
+  \item quantisation: data frame with columns rep, ss_intra and left_out (only for \code{type = "loo"})
   \item neighbourhood: data frame with columns sample1, sample2 and stability
   \item random: probability of two samples being neighbours on a random map
-  \item nmaps, type, nrep, radius, seed: settings and number of maps
+  \item nmaps, type, radius: number of maps and settings
 }
 }
 \description{

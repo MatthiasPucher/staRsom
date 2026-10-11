@@ -26,9 +26,8 @@
 #' eemsom_samples(som)
 #' eemsom_plot_map(som, type = "cluster")
 eemsom_cluster <- function(som, k, method = "complete", seed = 42){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   som$clusters <- eemsom_clusterunits(som$som$codes[[1]], k = k, method = method, seed = seed)
-  som$cluster_method <- method
   som
 }
 
@@ -66,7 +65,7 @@ eemsom_cluster <- function(som, k, method = "complete", seed = 42){
 #' som <- eemsom(eem_list, rlen = 100)
 #' eemsom_kselect(som, k = 2:6)
 eemsom_kselect <- function(som, k = 2:9, method = "complete", seed = 42){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   eemsom_kcriteria(som$som$codes[[1]], k = k, method = method, seed = seed)
 }
 
@@ -145,13 +144,14 @@ eemsom_plot_silhouette <- function(x){
 #' pf_groups <- lapply(eem_groups, eem_parafac, comps = 2, nstart = 5, cores = 1)
 #' }
 eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   if(!inherits(eem_list, "eemlist")) stop("eem_list is not of class eemlist!")
   by <- match.arg(by, c("cluster", "unit"))
   if(by == "cluster" & is.null(som$clusters)) stop("The units have not been clustered yet!")
   smp <- eemsom_samples(som)
   names <- eem_names(eem_list)
-  if(!all(names %in% smp$sample)) stop("The following samples were not used in the self-organising map: ", paste(setdiff(names, smp$sample), collapse = ", "), ". Please use eemsom_predict() for new samples.")
+  unknown <- setdiff(names, smp$sample)
+  if(length(unknown) > 0) stop("The following samples were not used in the self-organising map: ", paste(unknown, collapse = ", "), ". Please use eemsom_predict() for new samples.")
   group <- smp[[by]][match(names, smp$sample)]
   groups <- sort(unique(group))
   res <- lapply(groups, function(g){
@@ -184,17 +184,16 @@ eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
 #' # usually, new samples are mapped. Here, the training samples are used.
 #' eemsom_predict(som, eem_list)
 eemsom_predict <- function(som, eem_list){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   eempf_som_unsupported(som, "eemsom_predict")
   mat <- eem2mat(eem_list, normalise = "none", na = "keep")
-  if(!isTRUE(all.equal(attr(mat, "ex"), som$ex)) | !isTRUE(all.equal(attr(mat, "em"), som$em))) stop("The wavelengths of eem_list differ from the self-organising map! Please consider eem_red2smallest() or eem_extend2largest().")
+  same_wl <- isTRUE(all.equal(attr(mat, "ex"), som$ex)) & isTRUE(all.equal(attr(mat, "em"), som$em))
+  if(!same_wl) stop("The wavelengths of eem_list differ from the self-organising map! Please consider eem_red2smallest() or eem_extend2largest().")
   mat <- mat[, som$keep, drop = FALSE]
   mat <- mat / eem_normfactors(mat, som$normalise)
   d <- eemsom_distmat(mat, som$som$codes[[1]])
   unit <- apply(d, 1, which.min)
-  cluster <- if(is.null(som$clusters)) rep(NA, length(unit)) else som$clusters[unit]
-  data.frame(sample = rownames(mat), unit = unit, x = som$som$grid$pts[unit, 1], y = som$som$grid$pts[unit, 2],
-             distance = sqrt(d[cbind(seq_along(unit), unit)]), cluster = cluster, stringsAsFactors = FALSE)
+  eemsom_unittable(som, rownames(mat), unit, d[cbind(seq_along(unit), unit)])
 }
 
 #' Cluster codebook vectors
@@ -248,14 +247,14 @@ eemsom_kcriteria <- function(codes, k, method = "complete", seed = 42){
 #' @noRd
 eemsom_dbindex <- function(mat, cl){
   groups <- sort(unique(cl))
-  centres <- t(vapply(groups, function(g) colMeans(mat[cl == g, , drop = FALSE]), numeric(ncol(mat))))
-  scatter <- vapply(seq_along(groups), function(i){
+  centres <- do.call(rbind, lapply(groups, function(g) colMeans(mat[cl == g, , drop = FALSE])))
+  scatter <- sapply(seq_along(groups), function(i){
     mean(sqrt(rowSums(sweep(mat[cl == groups[i], , drop = FALSE], 2, centres[i, ])^2)))
-  }, numeric(1))
+  })
   cdist <- as.matrix(dist(centres))
-  mean(vapply(seq_along(groups), function(i){
+  mean(sapply(seq_along(groups), function(i){
     max((scatter[i] + scatter[-i]) / cdist[i, -i])
-  }, numeric(1)))
+  }))
 }
 
 #' Within-cluster sum of squares
@@ -266,8 +265,8 @@ eemsom_dbindex <- function(mat, cl){
 #' @return numeric
 #' @noRd
 eemsom_wss <- function(mat, cl){
-  sum(vapply(unique(cl), function(g){
+  sum(sapply(unique(cl), function(g){
     m <- mat[cl == g, , drop = FALSE]
     sum(sweep(m, 2, colMeans(m))^2)
-  }, numeric(1)))
+  }))
 }

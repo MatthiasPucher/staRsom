@@ -38,7 +38,8 @@ eem2mat <- function(eem_list, normalise = "sd", na = "remove"){
   if(!any(keep)) stop("all wavelength pairs contain missing values in at least one sample! Please consider na = \"keep\" or eem_interp().")
   mat <- mat[, keep, drop = FALSE]
   norm_factors <- eem_normfactors(mat, normalise)
-  if(any(!is.finite(norm_factors) | norm_factors == 0)) stop("normalisation factors could not be calculated for the samples ", paste(samples[!is.finite(norm_factors) | norm_factors == 0], collapse = ", "), "!")
+  bad <- !is.finite(norm_factors) | norm_factors == 0
+  if(any(bad)) stop("normalisation factors could not be calculated for the samples ", paste(samples[bad], collapse = ", "), "!")
   mat <- mat / norm_factors
   attr(mat, "ex") <- ex
   attr(mat, "em") <- em
@@ -104,7 +105,7 @@ eem_checkmat <- function(eem_list){
   if(length(eem_list) < 1) stop("eem_list is empty!")
   ex <- eem_list[[1]]$ex
   em <- eem_list[[1]]$em
-  same <- vapply(eem_list, function(eem) isTRUE(all.equal(eem$ex, ex)) & isTRUE(all.equal(eem$em, em)), logical(1))
+  same <- sapply(eem_list, function(eem) isTRUE(all.equal(eem$ex, ex)) & isTRUE(all.equal(eem$em, em)))
   if(!all(same)) stop("dimensions mismatch! All EEMs need the same excitation and emission wavelengths. Please consider eem_red2smallest() or eem_extend2largest().")
   invisible(TRUE)
 }

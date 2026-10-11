@@ -46,7 +46,7 @@ eempf_som <- function(pfmodel, dim = "auto", normalise = TRUE, seed = 42, ...){
   mat <- loadings / norm_factors
   trained <- eemsom_train(mat, dim = dim, seed = seed, varname = "components", ...)
   res <- list(som = trained$som, ex = as.numeric(rownames(pf$C)), em = as.numeric(rownames(pf$B)), keep = rep(TRUE, nrow(pf$C) * nrow(pf$B)),
-              samples = rownames(loadings), normalise = normalise, norm_factors = unname(norm_factors), na = "remove", clusters = NULL, seed = seed,
+              samples = rownames(loadings), normalise = normalise, norm_factors = unname(norm_factors), na = "remove", clusters = NULL,
               settings = trained$settings, components = list(B = pf$B, C = pf$C))
   class(res) <- c("eempf_som", "eemsom")
   res

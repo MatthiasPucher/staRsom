@@ -84,7 +84,7 @@ ggeem.eemsom <- function(data, fill_max = FALSE, units = NULL, denormalise = FAL
 #' eemsom_plot_map(som, type = "umatrix")
 #' eemsom_plot_map(som, type = "samples", colour = substr(eem_names(eem_list), 1, 2), labels = TRUE)
 eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   type <- match.arg(type, c("counts", "umatrix", "quality", "cluster", "samples"))
   grid <- som$som$grid
   nu <- nrow(grid$pts)
@@ -93,7 +93,7 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE)
   value <- switch(type,
                   counts = tabulate(unit, nbins = nu),
                   umatrix = eemsom_umatrix(som),
-                  quality = vapply(seq_len(nu), function(u) if(any(unit == u)) mean(sqrt(som$som$distances[unit == u])) else NA_real_, numeric(1)),
+                  quality = sapply(seq_len(nu), function(u) mean(sqrt(som$som$distances[unit == u]))),
                   cluster = factor(som$clusters),
                   samples = if(is.null(som$clusters)) rep(NA, nu) else factor(som$clusters))
   poly <- eemsom_polygons(grid)
@@ -160,7 +160,7 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE)
 #' pfsom <- eempf_som(pf4[[1]], rlen = 100)
 #' eemsom_plot_cplane(pfsom, scale = "each")
 eemsom_plot_cplane <- function(som, ex = NULL, em = NULL, comps = NULL, scale = "common"){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   scale <- match.arg(scale, c("common", "each"))
   codes <- som$som$codes[[1]]
   poly <- eemsom_polygons(som$som$grid)
@@ -175,8 +175,8 @@ eemsom_plot_cplane <- function(som, ex = NULL, em = NULL, comps = NULL, scale = 
   } else {
     if(!is.null(comps)) stop("comps can only be used for maps of PARAFAC loadings, please use ex and em!")
     if(is.null(ex) | is.null(em) | length(ex) != length(em)) stop("ex and em need to have the same length!")
-    exs <- vapply(ex, function(w) som$ex[which.min(abs(som$ex - w))], numeric(1))
-    ems <- vapply(em, function(w) som$em[which.min(abs(som$em - w))], numeric(1))
+    exs <- sapply(ex, function(w) som$ex[which.min(abs(som$ex - w))])
+    ems <- sapply(em, function(w) som$em[which.min(abs(som$em - w))])
     vars <- paste0(exs, "|", ems)
     removed <- !vars %in% colnames(codes)
     if(any(removed)) stop("The wavelength pair ex = ", exs[removed][1], " nm, em = ", ems[removed][1], " nm was removed due to missing values!")
@@ -186,6 +186,7 @@ eemsom_plot_cplane <- function(som, ex = NULL, em = NULL, comps = NULL, scale = 
   table <- lapply(seq_along(vars), function(i){
     value <- unname(codes[, vars[i]])
     if(scale == "each"){
+      # a constant plane is shown in the middle of the colour scale
       value <- if(diff(range(value)) > 0) (value - min(value)) / diff(range(value)) else rep(0.5, length(value))
     }
     poly %>%
@@ -219,7 +220,7 @@ eemsom_plot_cplane <- function(som, ex = NULL, em = NULL, comps = NULL, scale = 
 #' som <- eemsom(eem_list, rlen = 100)
 #' eemsom_plot_training(som)
 eemsom_plot_training <- function(som){
-  stopifnot(inherits(som, "eemsom"))
+  if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   data.frame(iteration = seq_len(nrow(som$som$changes)), change = som$som$changes[, 1]) %>%
     ggplot(aes(x = iteration, y = change)) +
     geom_line() +
@@ -257,12 +258,9 @@ eemsom_polygons <- function(grid){
 #' @noRd
 eemsom_umatrix <- function(som){
   codes <- som$som$codes[[1]]
-  udist <- unit.distances(som$som$grid)
+  neighbours <- eemsom_unitdist(som$som$grid) == 1
   cdist <- as.matrix(dist(codes))
-  vapply(seq_len(nrow(codes)), function(u){
-    nb <- which(udist[u, ] > 0 & udist[u, ] < 1.01)
-    mean(cdist[u, nb])
-  }, numeric(1))
+  sapply(seq_len(nrow(codes)), function(u) mean(cdist[u, neighbours[u, ]]))
 }
 
 #' Positions of samples on the map
