@@ -26,3 +26,18 @@ som <- eemsom(eem_list, rlen = 100)
 regions <- eemsom_regions(som, dim = c(8, 8))
 ggeem(regions)
 }
+\seealso{
+Other fluorescence regions:
+\code{\link[=eemsom_fri]{eemsom_fri()}},
+\code{\link[=eemsom_regions]{eemsom_regions()}}
+
+Other plots:
+\code{\link[=eemsom_plot_cplane]{eemsom_plot_cplane()}},
+\code{\link[=eemsom_plot_map]{eemsom_plot_map()}},
+\code{\link[=eemsom_plot_silhouette]{eemsom_plot_silhouette()}},
+\code{\link[=eemsom_plot_stability]{eemsom_plot_stability()}},
+\code{\link[=eemsom_plot_training]{eemsom_plot_training()}},
+\code{\link[=ggeem.eemsom]{ggeem.eemsom()}}
+}
+\concept{fluorescence regions}
+\concept{plots}

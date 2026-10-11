@@ -24,7 +24,7 @@ eemsom(
 \method{print}{eemsom}(x, ...)
 }
 \arguments{
-\item{eem_list}{object of class eemlist. All EEMs need to have the same excitation and emission wavelengths.}
+\item{eem_list}{object of class eemlist. All EEMs need to have the same excitation and emission wavelengths and unique sample names.}
 
 \item{dim}{size of the map, either \code{"auto"} (default) or a numeric vector \code{c(xdim, ydim)} with the number of columns and rows of units}
 
@@ -48,7 +48,7 @@ eemsom(
 
 \item{verbose}{print infos}
 
-\item{...}{additional parameters that are passed on to \code{\link[kohonen]{som}}, e.g. \code{radius}}
+\item{...}{additional parameters that are passed on to \code{\link[kohonen]{som}}, e.g. \code{radius}. \code{keep.data} is always TRUE, because the data are needed by \code{\link{eemsom_samples}} and other functions.}
 
 \item{x}{object of class eemsom}
 }
@@ -69,13 +69,15 @@ object of class eemsom, a list containing
 The EEMs are unfolded into vectors (see \code{\link{eem2mat}}), normalised and arranged on a self-organising map (SOM, Kohonen 2013). Each unit of the map gets a prototype EEM (codebook vector). Similar samples are mapped to the same or neighbouring units. The calculation is done with \code{\link[kohonen]{som}}, please see details there.
 }
 \details{
-With \code{dim = "auto"}, the number of units is \eqn{5 \sqrt{n}}{5 sqrt(n)} (Vesanto and Alhoniemi 2000) but not more than the number of samples n. The ratio of the side lengths follows the ratio of the two largest eigenvalues of the data (Bieroza et al. 2009, Ejarque-Gonzalez and Butturini 2014).
+With \code{dim = "auto"}, the number of units is \eqn{5 \sqrt{n}}{5 sqrt(n)} (Vesanto and Alhoniemi 2000) but not more than the number of samples n. The ratio of the side lengths follows the two largest eigenvalues of the data (Bieroza et al. 2009, Ejarque-Gonzalez and Butturini 2014): like in the SOM Toolbox (Vesanto et al. 2000), it is the square root of the ratio of the eigenvalues, i.e. the ratio of the standard deviations along the first two principal components. Ratios above the square root of the number of units are replaced by 1 to avoid very elongated maps.
 
 The default learning rate (0.05 to 0.01) and the default neighbourhood radius (decreasing from two thirds of all unit distances to zero) of \code{\link[kohonen]{som}} correspond to the settings of Ejarque-Gonzalez and Butturini (2014).
 
-The squared Euclidean distance (\code{dist.fcts = "sumofsquares"}) is always used. Otherwise, kohonen would switch to the Tanimoto distance for data between 0 and 1 with row sums of 1, which occurs with \code{normalise = "sum"}.
+The squared Euclidean distance (\code{dist.fcts = "sumofsquares"}) is always used. Otherwise, kohonen would switch to the Tanimoto distance for data between 0 and 1 with row sums of 1, which occurs with \code{normalise = "sum"}. With \code{na = "keep"}, distances are calculated from the available wavelength pairs of a sample and scaled up to the number of all wavelength pairs.
 
 The initialisation with \code{init = "pca"} is deterministic. The order of samples in the online training is random, so \code{seed} is needed for reproducible results.
+
+The training time grows with the numbers of samples, units and wavelength pairs. As a rough guide for one core, online training with \code{rlen = 500} takes about a minute for 200 EEMs with 3000 wavelength pairs and several minutes for 1000 EEMs. \code{mode = "pbatch"} with \code{cores > 1}, a smaller \code{rlen} or a lower resolution of the EEMs (see \code{\link[staRdom]{eem_range}} and \code{\link[staRdom]{eem_exclude}}; Ejarque-Gonzalez and Butturini (2014) used 366 wavelength pairs) reduce the time. This matters for \code{\link{eemsom_stability}}, which repeats the training many times.
 }
 \examples{
 data(eem_list)
@@ -89,6 +91,8 @@ Kohonen, T. (2013). Essentials of the self-organizing map. Neural Networks 37, 5
 
 Vesanto, J., Alhoniemi, E. (2000). Clustering of the self-organizing map. IEEE Transactions on Neural Networks 11(3), 586-600. \doi{10.1109/72.846731}
 
+Vesanto, J., Himberg, J., Alhoniemi, E., Parhankangas, J. (2000). SOM Toolbox for Matlab 5. Report A57, Helsinki University of Technology.
+
 Bieroza, M., Baker, A., Bridgeman, J. (2009). Exploratory analysis of excitation-emission matrix fluorescence spectra with self-organizing maps as a basis for determination of organic matter removal efficiency at water treatment works. Journal of Geophysical Research: Biogeosciences 114(G4), 2009JG000940. \doi{10.1029/2009JG000940}
 
 Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
@@ -97,4 +101,10 @@ Wehrens, R., Kruisselbrink, J. (2018). Flexible Self-Organizing Maps in kohonen 
 }
 \seealso{
 \code{\link[kohonen]{som}}, \code{\link{eemsom_samples}}, \code{\link{eemsom_codes}}, \code{\link{eemsom_quality}}
+
+Other self-organising maps:
+\code{\link[=eem2mat]{eem2mat()}},
+\code{\link[=eempf_som]{eempf_som()}},
+\code{\link[=mat2eem]{mat2eem()}}
 }
+\concept{self-organising maps}

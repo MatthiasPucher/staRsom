@@ -49,13 +49,13 @@ object of class eemsom_regions, a list containing
 Wavelength pairs with similar behaviour across the units of a self-organising map are grouped into regions. Each region is assumed to represent a fluorescence component (Ejarque-Gonzalez and Butturini 2014). The component planes are arranged on a second self-organising map ("R-mode") and its units are clustered hierarchically.
 }
 \details{
-Following Barreto-Sanz and Perez-Uribe (2007), Ejarque-Gonzalez and Butturini (2014) calculated a self-organising map from the matrix of Pearson's correlations between all component planes (\code{method = "cormat"}). This matrix has as many rows and columns as wavelength pairs and the calculation gets slow with a high resolution of the EEMs.
+Following Barreto-Sanz and Perez-Uribe (2007), Ejarque-Gonzalez and Butturini (2014) calculated a self-organising map from the matrix of Pearson's correlations between all component planes (\code{method = "cormat"}). This matrix has as many rows and columns as wavelength pairs and the calculation gets slow with a high resolution of the EEMs (minutes with a few thousand wavelength pairs).
 
 With \code{method = "planes"}, each component plane is centred and scaled to length 1. The squared Euclidean distance of two such vectors equals \eqn{2(1 - r)}{2(1 - r)}, where r is their correlation. The R-mode map is calculated from these vectors directly, which is much faster and groups wavelength pairs by their correlation as well.
 
 Both methods group wavelength pairs by the correlation of their component planes, but the R-mode maps are trained on different vectors. The resulting regions are similar but not identical and the region numbers can differ.
 
-Wavelength pairs with constant component planes have no correlation and get no region (NA).
+Wavelength pairs with constant component planes have no correlation and get no region (NA), as well as wavelength pairs that were not used in the map.
 }
 \examples{
 data(eem_list)
@@ -72,4 +72,9 @@ Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation
 }
 \seealso{
 \code{\link{eemsom_fri}}
+
+Other fluorescence regions:
+\code{\link[=eemsom_fri]{eemsom_fri()}},
+\code{\link[=ggeem.eemsom_regions]{ggeem.eemsom_regions()}}
 }
+\concept{fluorescence regions}

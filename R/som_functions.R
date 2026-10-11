@@ -2,7 +2,7 @@
 #'
 #' @description The EEMs are unfolded into vectors (see \code{\link{eem2mat}}), normalised and arranged on a self-organising map (SOM, Kohonen 2013). Each unit of the map gets a prototype EEM (codebook vector). Similar samples are mapped to the same or neighbouring units. The calculation is done with \code{\link[kohonen]{som}}, please see details there.
 #'
-#' @param eem_list object of class eemlist. All EEMs need to have the same excitation and emission wavelengths.
+#' @param eem_list object of class eemlist. All EEMs need to have the same excitation and emission wavelengths and unique sample names.
 #' @param dim size of the map, either \code{"auto"} (default) or a numeric vector \code{c(xdim, ydim)} with the number of columns and rows of units
 #' @param topo topology of the map, \code{"hexagonal"} (default) or \code{"rectangular"}
 #' @param normalise normalisation of each sample, see \code{\link{eem2mat}}
@@ -14,15 +14,17 @@
 #' @param seed seed for the random number generator to get reproducible results. NULL does not set a seed. The random number generator state of the session is restored afterwards.
 #' @param cores number of cores used with \code{mode = "pbatch"}
 #' @param verbose print infos
-#' @param ... additional parameters that are passed on to \code{\link[kohonen]{som}}, e.g. \code{radius}
+#' @param ... additional parameters that are passed on to \code{\link[kohonen]{som}}, e.g. \code{radius}. \code{keep.data} is always TRUE, because the data are needed by \code{\link{eemsom_samples}} and other functions.
 #'
-#' @details With \code{dim = "auto"}, the number of units is \eqn{5 \sqrt{n}}{5 sqrt(n)} (Vesanto and Alhoniemi 2000) but not more than the number of samples n. The ratio of the side lengths follows the ratio of the two largest eigenvalues of the data (Bieroza et al. 2009, Ejarque-Gonzalez and Butturini 2014).
+#' @details With \code{dim = "auto"}, the number of units is \eqn{5 \sqrt{n}}{5 sqrt(n)} (Vesanto and Alhoniemi 2000) but not more than the number of samples n. The ratio of the side lengths follows the two largest eigenvalues of the data (Bieroza et al. 2009, Ejarque-Gonzalez and Butturini 2014): like in the SOM Toolbox (Vesanto et al. 2000), it is the square root of the ratio of the eigenvalues, i.e. the ratio of the standard deviations along the first two principal components. Ratios above the square root of the number of units are replaced by 1 to avoid very elongated maps.
 #'
 #' The default learning rate (0.05 to 0.01) and the default neighbourhood radius (decreasing from two thirds of all unit distances to zero) of \code{\link[kohonen]{som}} correspond to the settings of Ejarque-Gonzalez and Butturini (2014).
 #'
-#' The squared Euclidean distance (\code{dist.fcts = "sumofsquares"}) is always used. Otherwise, kohonen would switch to the Tanimoto distance for data between 0 and 1 with row sums of 1, which occurs with \code{normalise = "sum"}.
+#' The squared Euclidean distance (\code{dist.fcts = "sumofsquares"}) is always used. Otherwise, kohonen would switch to the Tanimoto distance for data between 0 and 1 with row sums of 1, which occurs with \code{normalise = "sum"}. With \code{na = "keep"}, distances are calculated from the available wavelength pairs of a sample and scaled up to the number of all wavelength pairs.
 #'
 #' The initialisation with \code{init = "pca"} is deterministic. The order of samples in the online training is random, so \code{seed} is needed for reproducible results.
+#'
+#' The training time grows with the numbers of samples, units and wavelength pairs. As a rough guide for one core, online training with \code{rlen = 500} takes about a minute for 200 EEMs with 3000 wavelength pairs and several minutes for 1000 EEMs. \code{mode = "pbatch"} with \code{cores > 1}, a smaller \code{rlen} or a lower resolution of the EEMs (see \code{\link[staRdom]{eem_range}} and \code{\link[staRdom]{eem_exclude}}; Ejarque-Gonzalez and Butturini (2014) used 366 wavelength pairs) reduce the time. This matters for \code{\link{eemsom_stability}}, which repeats the training many times.
 #'
 #' @return object of class eemsom, a list containing
 #' \itemize{
@@ -43,6 +45,8 @@
 #'
 #' Vesanto, J., Alhoniemi, E. (2000). Clustering of the self-organizing map. IEEE Transactions on Neural Networks 11(3), 586-600. \doi{10.1109/72.846731}
 #'
+#' Vesanto, J., Himberg, J., Alhoniemi, E., Parhankangas, J. (2000). SOM Toolbox for Matlab 5. Report A57, Helsinki University of Technology.
+#'
 #' Bieroza, M., Baker, A., Bridgeman, J. (2009). Exploratory analysis of excitation-emission matrix fluorescence spectra with self-organizing maps as a basis for determination of organic matter removal efficiency at water treatment works. Journal of Geophysical Research: Biogeosciences 114(G4), 2009JG000940. \doi{10.1029/2009JG000940}
 #'
 #' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
@@ -50,6 +54,7 @@
 #' Wehrens, R., Kruisselbrink, J. (2018). Flexible Self-Organizing Maps in kohonen 3.0. Journal of Statistical Software 87(7), 1-18. \doi{10.18637/jss.v087.i07}
 #'
 #' @seealso \code{\link[kohonen]{som}}, \code{\link{eemsom_samples}}, \code{\link{eemsom_codes}}, \code{\link{eemsom_quality}}
+#' @family self-organising maps
 #'
 #' @examples
 #' data(eem_list)
@@ -58,9 +63,10 @@
 #' som
 #' eemsom_samples(som)
 eemsom <- function(eem_list, dim = "auto", topo = "hexagonal", normalise = "sd", na = "remove", rlen = 500, alpha = c(0.05, 0.01), mode = "online", init = "pca", seed = 42, cores = 1, verbose = FALSE, ...){
+  na <- match.arg(na, c("remove", "keep"))
   mat <- eem2mat(eem_list, normalise = normalise, na = na)
   extra <- list(...)
-  if(na == "keep" & is.null(extra$maxNA.fraction)) extra$maxNA.fraction <- 1 - 1 / ncol(mat)
+  if(na == "keep" && is.null(extra$maxNA.fraction)) extra$maxNA.fraction <- 1 - 1 / ncol(mat)
   trained <- do.call(eemsom_train, c(list(mat = mat, dim = dim, topo = topo, rlen = rlen, alpha = alpha, mode = mode, init = init, seed = seed, cores = cores, verbose = verbose, varname = "wavelength pairs"), extra))
   eemsom <- list(som = trained$som, ex = attr(mat, "ex"), em = attr(mat, "em"), keep = attr(mat, "keep"), samples = attr(mat, "samples"),
                  normalise = attr(mat, "normalise"), norm_factors = attr(mat, "norm_factors"), na = na, clusters = NULL,
@@ -83,18 +89,22 @@ eemsom_train <- function(mat, dim = "auto", topo = "hexagonal", rlen = 500, alph
   mode <- match.arg(mode, c("online", "batch", "pbatch"))
   init <- match.arg(init, c("pca", "random"))
   if(nrow(mat) < 3) stop("at least 3 samples are needed for a self-organising map!")
+  # the principal components are needed for the map size and for the initialisation
+  pca <- if(identical(dim, "auto") || init == "pca") eemsom_pca(mat) else NULL
   if(identical(dim, "auto")){
-    dim <- eemsom_dim(mat, topo = topo)
-  } else {
-    if(!is.numeric(dim) | length(dim) != 2 | any(dim < 1)) stop("dim needs to be \"auto\" or a numeric vector c(xdim, ydim)!")
-    if(prod(dim) > nrow(mat)) warning("The map has more units (", prod(dim), ") than samples (", nrow(mat), ")!")
+    dim <- eemsom_dim(pca, nrow(mat), topo = topo)
+  } else if(!is.numeric(dim) || length(dim) != 2 || any(dim < 1)){
+    stop("dim needs to be \"auto\" or a numeric vector c(xdim, ydim)!")
   }
+  if(prod(dim) > nrow(mat)) warning("The map has more units (", prod(dim), ") than samples (", nrow(mat), ")!")
   if(verbose) cat(paste0("A map of ", dim[1], " x ", dim[2], " units is calculated from ", nrow(mat), " samples and ", ncol(mat), " ", varname, "."), fill = TRUE)
   grid <- somgrid(xdim = dim[1], ydim = dim[2], topo = topo)
   # kohonen uses the Tanimoto distance for data in [0, 1] with row sums of 1 (e.g. normalise = "sum" or relative PARAFAC loadings), so the distance is set explicitly
   args <- utils::modifyList(list(X = mat, grid = grid, rlen = rlen, alpha = alpha, mode = mode, cores = cores, dist.fcts = "sumofsquares"), list(...))
-  settings <- c(args[setdiff(names(args), c("X", "init"))], list(init = init))
-  if(init == "pca") args$init <- eemsom_pcainit(mat, grid)
+  # the data are needed by eemsom_samples(), eemsom_quality() and the plot functions
+  args$keep.data <- TRUE
+  settings <- c(args[setdiff(names(args), c("X", "init", "keep.data"))], list(init = init))
+  if(init == "pca") args$init <- eemsom_pcainit(pca, grid, colnames(mat))
   som <- with_seed(seed, do.call(kohonen::som, args))
   list(som = som, settings = settings)
 }
@@ -107,7 +117,7 @@ print.eemsom <- function(x, ...){
   cat(" map:", x$som$grid$xdim, "x", x$som$grid$ydim, x$som$grid$topo, "units\n")
   cat(" wavelength pairs:", sum(x$keep), "of", length(x$keep), "\n")
   cat(" normalisation:", x$normalise, "\n")
-  cat(" clusters:", ifelse(is.null(x$clusters), "none", length(unique(x$clusters))), "\n")
+  cat(" clusters:", if(is.null(x$clusters)) "none" else length(unique(x$clusters)), "\n")
   invisible(x)
 }
 
@@ -115,8 +125,12 @@ print.eemsom <- function(x, ...){
 #'
 #' @param som object of class eemsom, see \code{\link{eemsom}}
 #'
+#' @details With missing values (\code{na = "keep"}), the distances are calculated from the available wavelength pairs of a sample and scaled up to the number of all wavelength pairs, as in kohonen.
+#'
 #' @return data frame with columns sample, unit (number of the best matching unit), x and y (position of the unit on the map), distance (Euclidean distance between sample and prototype) and cluster (NA if no clustering was done)
 #' @export
+#'
+#' @family map results
 #'
 #' @examples
 #' data(eem_list)
@@ -153,14 +167,17 @@ eemsom_unittable <- function(som, samples, unit, sqdist){
 #'
 #' @details For maps of PARAFAC loadings (\code{\link{eempf_som}}), the prototype EEM of a unit is the sum of the PARAFAC components weighted by the prototype loadings.
 #'
-#' @return object of class eemlist, samples are named by the unit (e.g. "V1")
+#' @return object of class eemlist, samples are named by the unit (e.g. "V1"), see \code{\link{mat2eem}}
 #' @export
+#'
+#' @family map results
 #'
 #' @examples
 #' data(eem_list)
 #'
 #' som <- eemsom(eem_list, rlen = 100)
 #' codes <- eemsom_codes(som)
+#' codes
 #' ggeem(codes)
 eemsom_codes <- function(som, denormalise = FALSE){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
@@ -188,7 +205,7 @@ eemsom_codes <- function(som, denormalise = FALSE){
 #'
 #' @details
 #' \itemize{
-#'   \item quantisation_error: mean Euclidean distance between samples and their prototypes
+#'   \item quantisation_error: mean Euclidean distance between samples and their prototypes, see \code{\link{eemsom_samples}} for the handling of missing values
 #'   \item topographic_error: share of samples whose best and second best matching units are not neighbours (six neighbours on hexagonal maps, eight including the diagonals on rectangular maps, see \code{\link[kohonen]{unit.distances}})
 #'   \item explained_variance: share of the total sum of squares of the (normalised) data explained by the prototypes
 #' }
@@ -197,6 +214,8 @@ eemsom_codes <- function(som, denormalise = FALSE){
 #' @export
 #'
 #' @references Kohonen, T. (2013). Essentials of the self-organizing map. Neural Networks 37, 52-65. \doi{10.1016/j.neunet.2012.09.018}
+#'
+#' @family map results
 #'
 #' @examples
 #' data(eem_list)
@@ -211,23 +230,27 @@ eemsom_quality <- function(som){
   dmin <- apply(d, 1, min)
   bmu2 <- t(apply(d, 1, function(r) order(r)[1:2]))
   te <- mean(eemsom_unitdist(som$som$grid)[bmu2] > 1)
-  ss_tot <- sum(sweep(mat, 2, colMeans(mat, na.rm = TRUE))^2, na.rm = TRUE)
-  data.frame(quantisation_error = mean(sqrt(dmin)), topographic_error = te, explained_variance = 1 - sum(dmin) / ss_tot)
+  # total sum of squares, scaled for missing values like the distances
+  available <- !is.na(mat)
+  ss_rows <- rowSums(sweep(mat, 2, colMeans(mat, na.rm = TRUE))^2, na.rm = TRUE) * ncol(mat) / rowSums(available)
+  data.frame(quantisation_error = mean(sqrt(dmin)), topographic_error = te, explained_variance = 1 - sum(dmin) / sum(ss_rows))
 }
 
 #' Squared Euclidean distances between samples and codebook vectors
 #'
-#' @param mat matrix, samples in rows
+#' @param mat matrix, samples in rows, may contain NA
 #' @param codes matrix, codebook vectors in rows
 #'
-#' @return matrix samples x units
+#' @return matrix samples x units. Like in kohonen, the distances of samples with missing values are calculated from the available variables and scaled up to the number of all variables.
 #' @noRd
 eemsom_distmat <- function(mat, codes){
-  t(apply(mat, 1, function(s){
-    ok <- !is.na(s)
-    colSums((t(codes[, ok, drop = FALSE]) - s[ok])^2)
-  })) %>%
-    matrix(nrow = nrow(mat))
+  available <- !is.na(mat)
+  x <- mat
+  x[!available] <- 0
+  # sum((x - c)^2) over the available variables, expanded into matrix products
+  d <- rowSums(x^2) - 2 * x %*% t(codes) + available %*% t(codes^2)
+  d[d < 0] <- 0
+  unname(d * (ncol(mat) / rowSums(available)))
 }
 
 #' Distances between the units of a map
@@ -242,17 +265,19 @@ eemsom_unitdist <- function(grid){
 
 #' Map size according to Vesanto and Alhoniemi (2000)
 #'
-#' @param mat matrix, samples in rows
+#' @param pca principal components of the data, see eemsom_pca
+#' @param n number of samples
 #' @param topo topology
 #'
 #' @return numeric vector c(xdim, ydim)
 #' @noRd
-eemsom_dim <- function(mat, topo = "hexagonal"){
-  n <- nrow(mat)
+eemsom_dim <- function(pca, n, topo = "hexagonal"){
   munits <- min(round(5 * sqrt(n)), n)
-  d <- eemsom_pca(mat)$d
-  ratio <- if(length(d) > 1 && d[2] > 0) d[1] / d[2] else 1
-  xdim <- max(2, round(sqrt(munits / ratio * ifelse(topo == "hexagonal", sqrt(0.75), 1))))
+  d <- pca$d
+  # ratio of the side lengths = ratio of the standard deviations along the first two principal components,
+  # extreme ratios are replaced by 1 like in the SOM Toolbox (som_topol_struct)
+  ratio <- if(length(d) > 1 && d[2] > 0 && d[1] <= sqrt(munits) * d[2]) d[1] / d[2] else 1
+  xdim <- max(2, round(sqrt(munits / ratio * if(topo == "hexagonal") sqrt(0.75) else 1)))
   ydim <- max(2, round(munits / xdim))
   c(xdim, ydim)
 }
@@ -261,7 +286,7 @@ eemsom_dim <- function(mat, topo = "hexagonal"){
 #'
 #' @param mat matrix, samples in rows
 #'
-#' @return list with centre, d (singular values) and v (loadings) of the first two components
+#' @return list with centre, d (singular values) and v (loadings) of the first two components and n (number of samples)
 #' @noRd
 eemsom_pca <- function(mat){
   centre <- colMeans(mat, na.rm = TRUE)
@@ -273,22 +298,22 @@ eemsom_pca <- function(mat){
 
 #' Linear initialisation of codebook vectors on the plane of the first two principal components
 #'
-#' @param mat matrix, samples in rows
+#' @param pca principal components of the data, see eemsom_pca
 #' @param grid object of class somgrid
+#' @param varnames column names of the result
 #'
 #' @return matrix of initial codebook vectors
 #' @noRd
-eemsom_pcainit <- function(mat, grid){
-  pca <- eemsom_pca(mat)
+eemsom_pcainit <- function(pca, grid, varnames = NULL){
   pts <- grid$pts
   # unit coordinates scaled to [-1, 1]
   coords <- apply(pts, 2, function(p) if(diff(range(p)) > 0) 2 * (p - min(p)) / diff(range(p)) - 1 else p * 0)
   # the longer side of the map follows the first principal component
   if(diff(range(pts[, 2])) > diff(range(pts[, 1]))) coords <- coords[, 2:1]
   k <- ncol(pca$v)
-  init <- matrix(pca$centre, nrow = nrow(pts), ncol = ncol(mat), byrow = TRUE) +
+  init <- matrix(pca$centre, nrow = nrow(pts), ncol = length(pca$centre), byrow = TRUE) +
     coords[, seq_len(k), drop = FALSE] %*% (t(pca$v) * pca$d / sqrt(pca$n - 1))
-  colnames(init) <- colnames(mat)
+  colnames(init) <- varnames
   init
 }
 
@@ -301,6 +326,7 @@ eemsom_pcainit <- function(mat, grid){
 #' @noRd
 with_seed <- function(seed, code){
   if(is.null(seed)) return(code)
+  # .Random.seed lives in the global environment and is restored like withr::with_seed does
   genv <- globalenv()
   old_seed <- if(exists(".Random.seed", envir = genv, inherits = FALSE)) get(".Random.seed", envir = genv) else NULL
   on.exit({

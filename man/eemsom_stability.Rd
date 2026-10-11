@@ -33,7 +33,7 @@ eemsom_stability(
 
 \item{cores}{number of parallel calculations}
 
-\item{verbose}{print infos}
+\item{verbose}{print infos, with \code{cores = 1} also the progress}
 
 \item{x}{object of class eemsom_stability}
 
@@ -58,20 +58,20 @@ Quantisation: the intra-class sum of squares (SS intra), the sum of the squared 
 
 Neighbourhood: for each pair of samples, the stability is the share of maps in which both samples are neighbours. Stable maps have values close to 0 or 1. On a randomly organised map, two samples are neighbours with probability p (element \code{random}), the stability then follows a binomial distribution.
 
-With \code{type = "loo"}, \code{nrep} times the number of samples maps are calculated, which can take some time.
+Run time: \code{nrep} maps (\code{type = "bootstrap"}) or \code{nrep} times the number of samples maps (\code{type = "loo"}) are trained with the settings of \code{som}, so the run time is the corresponding multiple of the training time of \code{\link{eemsom}}. Please see there for ways to reduce the training time and use \code{cores} for parallel calculation.
 }
 \examples{
 data(eem_list)
 
 som <- eemsom(eem_list, dim = c(3, 3), rlen = 20)
-stab <- eemsom_stability(eem_list, som, nrep = 5)
+stab <- eemsom_stability(eem_list, som, nrep = 3)
 stab
 eemsom_plot_stability(stab)
 
 \donttest{
 # with real data sets, use more repetitions
 som <- eemsom(eem_list)
-stab <- eemsom_stability(eem_list, som, nrep = 20, cores = 2)
+stab <- eemsom_stability(eem_list, som, nrep = 10, cores = 2)
 eemsom_plot_stability(stab)
 }
 }
@@ -82,4 +82,8 @@ Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation
 }
 \seealso{
 \code{\link{eemsom_plot_stability}}
+
+Other stability:
+\code{\link[=eemsom_plot_stability]{eemsom_plot_stability()}}
 }
+\concept{stability}

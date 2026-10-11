@@ -36,4 +36,10 @@ Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation
 }
 \seealso{
 \code{\link{eemsom_kselect}}, \code{\link{eemsom_split}}
+
+Other clustering:
+\code{\link[=eemsom_kselect]{eemsom_kselect()}},
+\code{\link[=eemsom_plot_silhouette]{eemsom_plot_silhouette()}},
+\code{\link[=eemsom_split]{eemsom_split()}}
 }
+\concept{clustering}

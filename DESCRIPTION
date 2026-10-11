@@ -1,10 +1,10 @@
 Package: staRsom
 Type: Package
-Title: Self-Organizing Maps for EEMs from DOM
+Title: Self-Organising Maps for EEMs from DOM
 Version: 0.1.0
 Authors@R: person("Matthias", "Pucher", email = "matthias.pucher@ecosight.at",
                   role = c("aut", "cre"), comment = c(ORCID = "0000-0002-9093-2199"))
-Description: Self-organizing maps (SOM, Kohonen 2013) <doi:10.1016/j.neunet.2012.09.018> for
+Description: Self-organising maps (SOM, Kohonen 2013) <doi:10.1016/j.neunet.2012.09.018> for
     excitation emission matrix (EEM) data of dissolved organic matter (DOM) prepared with
     'staRdom'. Samples are arranged on a map, grouped by clustering the prototype EEMs and
     fluorescence regions are derived from correlated component planes following
@@ -12,6 +12,7 @@ Description: Self-organizing maps (SOM, Kohonen 2013) <doi:10.1016/j.neunet.2012
     split into sample groups for subsequent PARAFAC analyses.
 License: AGPL-3
 Encoding: UTF-8
+Language: en-GB
 Depends: R (>= 4.4.0), staRdom (>= 1.1.32)
 Imports:
     cluster,

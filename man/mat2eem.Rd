@@ -27,7 +27,7 @@ mat2eem(
 \item{norm_factors}{optional numeric vector, rows of \code{mat} are multiplied by these factors to reverse a normalisation. NULL (default) leaves the values unchanged.}
 }
 \value{
-object of class eemlist
+object of class eemlist. The EEMs have no file name and the attributes used by eemR (e.g. \code{is_blank_corrected}) are NA.
 }
 \description{
 Rows of a matrix created by \code{\link{eem2mat}} or of a matrix with the same columns (e.g. codebook vectors of a self-organising map) are converted to EEMs. Wavelength pairs that were removed before are set to NA.
@@ -38,8 +38,15 @@ data(eem_list)
 m <- eem2mat(eem_list)
 eem_list2 <- mat2eem(m)                                         # normalised EEMs
 eem_list3 <- mat2eem(m, norm_factors = attr(m, "norm_factors")) # original values
+eem_list2
 ggeem(eem_list2)
 }
 \seealso{
 \code{\link{eem2mat}}
+
+Other self-organising maps:
+\code{\link[=eem2mat]{eem2mat()}},
+\code{\link[=eempf_som]{eempf_som()}},
+\code{\link[=eemsom]{eemsom()}}
 }
+\concept{self-organising maps}

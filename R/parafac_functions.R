@@ -10,9 +10,11 @@
 #'
 #' @details The result can be used with the functions for self-organising maps of EEMs, e.g. \code{\link{eemsom_samples}}, \code{\link{eemsom_cluster}}, \code{\link{eemsom_split}} and the plot functions. The prototype EEM of a unit (\code{\link{eemsom_codes}}, \code{\link[staRdom]{ggeem}}) is the sum of the PARAFAC components weighted by the prototype loadings. \code{\link{eemsom_plot_cplane}} shows component planes of the PARAFAC components with the argument \code{comps}.
 #'
+#' Relative contributions (\code{normalise = TRUE}) are only meaningful for non-negative loadings, i.e. for models calculated with \code{const = c("nonneg", "nonneg", "nonneg")} in \code{\link[staRdom]{eem_parafac}}.
+#'
 #' \code{\link{eemsom_regions}}, \code{\link{eemsom_predict}} and \code{\link{eemsom_stability}} are not available for these maps.
 #'
-#' @return object of class eempf_som and eemsom, see \code{\link{eemsom}}. Additionally, it contains the element components with the Fmax-scaled emission (B) and excitation (C) loadings of the PARAFAC model.
+#' @return object of class eempf_som and eemsom, see \code{\link{eemsom}}. Additionally, it contains the element components with the Fmax-scaled emission (B) and excitation (C) loadings of the PARAFAC model. The element normalise is the logical value of the argument and norm_factors are the sums of the Fmax values (or 1).
 #' @export
 #'
 #' @importFrom staRdom eempf_rescaleBC norm2A
@@ -24,6 +26,7 @@
 #' Zhang, Y., Liang, X., Wang, Z., Xu, L. (2015). A novel approach combining self-organizing map and parallel factor analysis for monitoring water quality of watersheds under non-point source pollution. Scientific Reports 5, 16079. \doi{10.1038/srep16079}
 #'
 #' @seealso \code{\link{eemsom}}, \code{\link[staRdom]{eem_parafac}}
+#' @family self-organising maps
 #'
 #' @examples
 #' data(pf_models)
@@ -58,8 +61,8 @@ eempf_som <- function(pfmodel, dim = "auto", normalise = TRUE, seed = 42, ...){
 print.eempf_som <- function(x, ...){
   cat("Self-organising map of", length(x$samples), "samples from a PARAFAC model with", ncol(x$components$B), "components\n")
   cat(" map:", x$som$grid$xdim, "x", x$som$grid$ydim, x$som$grid$topo, "units\n")
-  cat(" loadings:", ifelse(x$normalise, "relative (Fmax / sum of Fmax)", "Fmax"), "\n")
-  cat(" clusters:", ifelse(is.null(x$clusters), "none", length(unique(x$clusters))), "\n")
+  cat(" loadings:", if(x$normalise) "relative (Fmax / sum of Fmax)" else "Fmax", "\n")
+  cat(" clusters:", if(is.null(x$clusters)) "none" else length(unique(x$clusters)), "\n")
   invisible(x)
 }
 

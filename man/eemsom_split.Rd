@@ -34,10 +34,23 @@ lengths(eem_groups)
 
 \donttest{
 # separate PARAFAC models for each group
-# (with real data sets, groups need enough samples)
-pf_groups <- lapply(eem_groups, eem_parafac, comps = 2, nstart = 5, cores = 1)
+# (with real data sets, groups need enough samples and more starts)
+pf_groups <- lapply(eem_groups, eem_parafac, comps = 2, nstart = 2, cores = 1)
 }
 }
 \seealso{
 \code{\link{eemsom_cluster}}, \code{\link[staRdom]{eem_parafac}}
+
+Other clustering:
+\code{\link[=eemsom_cluster]{eemsom_cluster()}},
+\code{\link[=eemsom_kselect]{eemsom_kselect()}},
+\code{\link[=eemsom_plot_silhouette]{eemsom_plot_silhouette()}}
+
+Other map results:
+\code{\link[=eemsom_codes]{eemsom_codes()}},
+\code{\link[=eemsom_predict]{eemsom_predict()}},
+\code{\link[=eemsom_quality]{eemsom_quality()}},
+\code{\link[=eemsom_samples]{eemsom_samples()}}
 }
+\concept{clustering}
+\concept{map results}

@@ -9,7 +9,7 @@
 #' @param radius two samples are neighbours if their units are not more than \code{radius} units apart
 #' @param seed seed for the random number generator to get reproducible results
 #' @param cores number of parallel calculations
-#' @param verbose print infos
+#' @param verbose print infos, with \code{cores = 1} also the progress
 #'
 #' @details For each map, all samples are mapped to their best matching unit, including samples that were not part of the resampled data.
 #'
@@ -17,7 +17,7 @@
 #'
 #' Neighbourhood: for each pair of samples, the stability is the share of maps in which both samples are neighbours. Stable maps have values close to 0 or 1. On a randomly organised map, two samples are neighbours with probability p (element \code{random}), the stability then follows a binomial distribution.
 #'
-#' With \code{type = "loo"}, \code{nrep} times the number of samples maps are calculated, which can take some time.
+#' Run time: \code{nrep} maps (\code{type = "bootstrap"}) or \code{nrep} times the number of samples maps (\code{type = "loo"}) are trained with the settings of \code{som}, so the run time is the corresponding multiple of the training time of \code{\link{eemsom}}. Please see there for ways to reduce the training time and use \code{cores} for parallel calculation.
 #'
 #' @return object of class eemsom_stability, a list containing
 #' \itemize{
@@ -35,19 +35,20 @@
 #' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
 #' @seealso \code{\link{eemsom_plot_stability}}
+#' @family stability
 #'
 #' @examples
 #' data(eem_list)
 #'
 #' som <- eemsom(eem_list, dim = c(3, 3), rlen = 20)
-#' stab <- eemsom_stability(eem_list, som, nrep = 5)
+#' stab <- eemsom_stability(eem_list, som, nrep = 3)
 #' stab
 #' eemsom_plot_stability(stab)
 #'
 #' \donttest{
 #' # with real data sets, use more repetitions
 #' som <- eemsom(eem_list)
-#' stab <- eemsom_stability(eem_list, som, nrep = 20, cores = 2)
+#' stab <- eemsom_stability(eem_list, som, nrep = 10, cores = 2)
 #' eemsom_plot_stability(stab)
 #' }
 eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radius = 1, seed = 42, cores = 1, verbose = FALSE){
@@ -59,7 +60,7 @@ eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radiu
   if(!identical(rownames(mat), som$samples) || !identical(attr(mat, "keep"), som$keep)) stop("eem_list needs to contain the samples used to calculate som, in the same order!")
   n <- nrow(mat)
   tasks <- with_seed(seed, {
-    if(type == "bootstrap"){
+    tasks <- if(type == "bootstrap"){
       lapply(seq_len(nrep), function(r) list(rep = r, left_out = NA_character_, idx = sample.int(n, n, replace = TRUE)))
     } else {
       lapply(seq_len(n * nrep), function(r){
@@ -67,16 +68,20 @@ eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radiu
         list(rep = r, left_out = rownames(mat)[i], idx = seq_len(n)[-i])
       })
     }
+    # each map gets its own seed, so the result does not depend on cores
+    seeds <- sample.int(.Machine$integer.max, length(tasks))
+    Map(function(task, s){
+      task$seed <- s
+      task
+    }, tasks, seeds)
   })
-  task_seeds <- with_seed(seed, sample.int(.Machine$integer.max, length(tasks)))
-  for(t in seq_along(tasks)) tasks[[t]]$seed <- task_seeds[t]
   settings <- som$settings
   grid <- settings$grid
   if(settings$init == "pca"){
-    for(t in seq_along(tasks)) tasks[[t]]$init <- eemsom_pcainit(mat[tasks[[t]]$idx, , drop = FALSE], grid)
+    for(t in seq_along(tasks)) tasks[[t]]$init <- eemsom_pcainit(eemsom_pca(mat[tasks[[t]]$idx, , drop = FALSE]), grid, colnames(mat))
   }
   args <- settings[setdiff(names(settings), "init")]
-  if(verbose) cat(paste0(length(tasks), " maps are calculated on ", cores, " core", ifelse(cores > 1, "s", ""), "."), fill = TRUE)
+  if(verbose) cat(paste0(length(tasks), " maps are calculated on ", cores, " core", if(cores > 1) "s" else "", "."), fill = TRUE)
   if(cores > 1){
     # detach the worker from the package namespace, so the workers only need kohonen
     worker <- eemsom_stabilityworker
@@ -85,7 +90,12 @@ eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radiu
     on.exit(stopCluster(cl))
     codes <- parLapply(cl, tasks, worker, mat = mat, args = args)
   } else {
-    codes <- with_seed(seed, lapply(tasks, eemsom_stabilityworker, mat = mat, args = args))
+    report <- unique(ceiling(seq(0.1, 1, by = 0.1) * length(tasks)))
+    codes <- with_seed(seed, lapply(seq_along(tasks), function(t){
+      res <- eemsom_stabilityworker(tasks[[t]], mat = mat, args = args)
+      if(verbose && t %in% report) cat(paste0(t, " of ", length(tasks), " maps calculated."), fill = TRUE)
+      res
+    }))
   }
   near <- eemsom_unitdist(grid) <= radius
   ss_intra <- numeric(length(codes))
@@ -117,6 +127,8 @@ eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radiu
 #' @noRd
 eemsom_stabilityworker <- function(task, mat, args){
   args$X <- mat[task$idx, , drop = FALSE]
+  # only the codebook vectors are needed
+  args$keep.data <- FALSE
   if(!is.null(task$init)) args$init <- task$init
   set.seed(task$seed)
   do.call(kohonen::som, args)$codes[[1]]
@@ -153,11 +165,14 @@ print.eemsom_stability <- function(x, ...){
 #'
 #' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
+#' @family stability
+#' @family plots
+#'
 #' @examples
 #' data(eem_list)
 #'
 #' som <- eemsom(eem_list, dim = c(3, 3), rlen = 20)
-#' stab <- eemsom_stability(eem_list, som, nrep = 5)
+#' stab <- eemsom_stability(eem_list, som, nrep = 3)
 #' eemsom_plot_stability(stab)
 eemsom_plot_stability <- function(x){
   if(!inherits(x, "eemsom_stability")) stop("x needs to be of class eemsom_stability!")

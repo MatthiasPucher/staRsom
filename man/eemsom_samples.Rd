@@ -15,9 +15,20 @@ data frame with columns sample, unit (number of the best matching unit), x and y
 \description{
 Assignment of samples to units of a self-organising map
 }
+\details{
+With missing values (\code{na = "keep"}), the distances are calculated from the available wavelength pairs of a sample and scaled up to the number of all wavelength pairs, as in kohonen.
+}
 \examples{
 data(eem_list)
 
 som <- eemsom(eem_list, rlen = 100)
 eemsom_samples(som)
 }
+\seealso{
+Other map results:
+\code{\link[=eemsom_codes]{eemsom_codes()}},
+\code{\link[=eemsom_predict]{eemsom_predict()}},
+\code{\link[=eemsom_quality]{eemsom_quality()}},
+\code{\link[=eemsom_split]{eemsom_split()}}
+}
+\concept{map results}

@@ -25,7 +25,7 @@ The units of a self-organising map are clustered with different numbers of clust
 \itemize{
   \item silhouette: mean silhouette width of the units (Rousseeuw 1987), higher is better
   \item negative: number of units with negative silhouette width, i.e. units that are closer to another cluster, lower is better (Ejarque-Gonzalez and Butturini 2014)
-  \item davies_bouldin: Davies-Bouldin index, lower is better
+  \item davies_bouldin: Davies-Bouldin index, lower is better (Inf if two clusters have identical centres)
   \item wss: within-cluster sum of squares, look for an elbow
 }
 }
@@ -42,3 +42,10 @@ Davies, D. L., Bouldin, D. W. (1979). A Cluster Separation Measure. IEEE Transac
 
 Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 }
+\seealso{
+Other clustering:
+\code{\link[=eemsom_cluster]{eemsom_cluster()}},
+\code{\link[=eemsom_plot_silhouette]{eemsom_plot_silhouette()}},
+\code{\link[=eemsom_split]{eemsom_split()}}
+}
+\concept{clustering}

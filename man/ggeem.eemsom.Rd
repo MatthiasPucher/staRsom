@@ -40,4 +40,13 @@ Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation
 }
 \seealso{
 \code{\link[staRdom]{ggeem}}, \code{\link{eemsom_codes}}
+
+Other plots:
+\code{\link[=eemsom_plot_cplane]{eemsom_plot_cplane()}},
+\code{\link[=eemsom_plot_map]{eemsom_plot_map()}},
+\code{\link[=eemsom_plot_silhouette]{eemsom_plot_silhouette()}},
+\code{\link[=eemsom_plot_stability]{eemsom_plot_stability()}},
+\code{\link[=eemsom_plot_training]{eemsom_plot_training()}},
+\code{\link[=ggeem.eemsom_regions]{ggeem.eemsom_regions()}}
 }
+\concept{plots}

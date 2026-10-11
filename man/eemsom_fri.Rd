@@ -32,3 +32,9 @@ Chen, W., Westerhoff, P., Leenheer, J. A., Booksh, K. (2003). Fluorescence Excit
 
 Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 }
+\seealso{
+Other fluorescence regions:
+\code{\link[=eemsom_regions]{eemsom_regions()}},
+\code{\link[=ggeem.eemsom_regions]{ggeem.eemsom_regions()}}
+}
+\concept{fluorescence regions}

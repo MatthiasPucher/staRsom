@@ -27,3 +27,19 @@ Rousseeuw, P. J. (1987). Silhouettes: A graphical aid to the interpretation and 
 
 Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 }
+\seealso{
+Other clustering:
+\code{\link[=eemsom_cluster]{eemsom_cluster()}},
+\code{\link[=eemsom_kselect]{eemsom_kselect()}},
+\code{\link[=eemsom_split]{eemsom_split()}}
+
+Other plots:
+\code{\link[=eemsom_plot_cplane]{eemsom_plot_cplane()}},
+\code{\link[=eemsom_plot_map]{eemsom_plot_map()}},
+\code{\link[=eemsom_plot_stability]{eemsom_plot_stability()}},
+\code{\link[=eemsom_plot_training]{eemsom_plot_training()}},
+\code{\link[=ggeem.eemsom]{ggeem.eemsom()}},
+\code{\link[=ggeem.eemsom_regions]{ggeem.eemsom_regions()}}
+}
+\concept{clustering}
+\concept{plots}

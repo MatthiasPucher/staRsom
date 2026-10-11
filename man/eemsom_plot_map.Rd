@@ -13,7 +13,7 @@ eemsom_plot_map(som, type = "counts", colour = NULL, labels = FALSE)
 \itemize{
   \item \code{"counts"}: number of samples mapped to each unit
   \item \code{"umatrix"}: unified distance matrix, mean Euclidean distance between the prototype of a unit and the prototypes of its direct neighbours. High values separate groups of similar units.
-  \item \code{"quality"}: mean distance between samples and the prototype of their unit
+  \item \code{"quality"}: mean distance between the samples of a unit and its prototype, see \code{\link{eemsom_samples}}
   \item \code{"cluster"}: clusters of the units
   \item \code{"samples"}: samples as points on their units, the units are coloured by cluster if available
 }}
@@ -46,3 +46,13 @@ eemsom_plot_map(som, type = "samples", colour = substr(eem_names(eem_list), 1, 2
 \references{
 Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 }
+\seealso{
+Other plots:
+\code{\link[=eemsom_plot_cplane]{eemsom_plot_cplane()}},
+\code{\link[=eemsom_plot_silhouette]{eemsom_plot_silhouette()}},
+\code{\link[=eemsom_plot_stability]{eemsom_plot_stability()}},
+\code{\link[=eemsom_plot_training]{eemsom_plot_training()}},
+\code{\link[=ggeem.eemsom]{ggeem.eemsom()}},
+\code{\link[=ggeem.eemsom_regions]{ggeem.eemsom_regions()}}
+}
+\concept{plots}

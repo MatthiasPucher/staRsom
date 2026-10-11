@@ -17,6 +17,7 @@
 #' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
 #' @seealso \code{\link{eemsom_kselect}}, \code{\link{eemsom_split}}
+#' @family clustering
 #'
 #' @examples
 #' data(eem_list)
@@ -44,7 +45,7 @@ eemsom_cluster <- function(som, k, method = "complete", seed = 42){
 #' \itemize{
 #'   \item silhouette: mean silhouette width of the units (Rousseeuw 1987), higher is better
 #'   \item negative: number of units with negative silhouette width, i.e. units that are closer to another cluster, lower is better (Ejarque-Gonzalez and Butturini 2014)
-#'   \item davies_bouldin: Davies-Bouldin index, lower is better
+#'   \item davies_bouldin: Davies-Bouldin index, lower is better (Inf if two clusters have identical centres)
 #'   \item wss: within-cluster sum of squares, look for an elbow
 #' }
 #'
@@ -58,6 +59,8 @@ eemsom_cluster <- function(som, k, method = "complete", seed = 42){
 #' Davies, D. L., Bouldin, D. W. (1979). A Cluster Separation Measure. IEEE Transactions on Pattern Analysis and Machine Intelligence 1(2), 224-227. \doi{10.1109/TPAMI.1979.4766909}
 #'
 #' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
+#'
+#' @family clustering
 #'
 #' @examples
 #' data(eem_list)
@@ -83,6 +86,9 @@ eemsom_kselect <- function(som, k = 2:9, method = "complete", seed = 42){
 #' @references Rousseeuw, P. J. (1987). Silhouettes: A graphical aid to the interpretation and validation of cluster analysis. Journal of Computational and Applied Mathematics 20, 53-65. \doi{10.1016/0377-0427(87)90125-7}
 #'
 #' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
+#'
+#' @family clustering
+#' @family plots
 #'
 #' @examples
 #' data(eem_list)
@@ -129,6 +135,8 @@ eemsom_plot_silhouette <- function(x){
 #' @export
 #'
 #' @seealso \code{\link{eemsom_cluster}}, \code{\link[staRdom]{eem_parafac}}
+#' @family clustering
+#' @family map results
 #'
 #' @examples
 #' data(eem_list)
@@ -140,14 +148,14 @@ eemsom_plot_silhouette <- function(x){
 #'
 #' \donttest{
 #' # separate PARAFAC models for each group
-#' # (with real data sets, groups need enough samples)
-#' pf_groups <- lapply(eem_groups, eem_parafac, comps = 2, nstart = 5, cores = 1)
+#' # (with real data sets, groups need enough samples and more starts)
+#' pf_groups <- lapply(eem_groups, eem_parafac, comps = 2, nstart = 2, cores = 1)
 #' }
 eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   if(!inherits(eem_list, "eemlist")) stop("eem_list is not of class eemlist!")
   by <- match.arg(by, c("cluster", "unit"))
-  if(by == "cluster" & is.null(som$clusters)) stop("The units have not been clustered yet!")
+  if(by == "cluster" && is.null(som$clusters)) stop("The units have not been clustered yet!")
   smp <- eemsom_samples(som)
   names <- eem_names(eem_list)
   unknown <- setdiff(names, smp$sample)
@@ -171,10 +179,12 @@ eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
 #' @param som object of class eemsom, see \code{\link{eemsom}}
 #' @param eem_list object of class eemlist with the same excitation and emission wavelengths as the training data
 #'
-#' @details Missing values in the new samples are ignored when calculating the distances.
+#' @details Only the wavelength pairs used in the map are considered. Missing values in the new samples are ignored when calculating the distances, which are scaled up to the number of all wavelength pairs as in kohonen (see \code{\link{eemsom_samples}}).
 #'
 #' @return data frame with columns sample, unit, x, y, distance and cluster like \code{\link{eemsom_samples}}
 #' @export
+#'
+#' @family map results
 #'
 #' @examples
 #' data(eem_list)
@@ -186,8 +196,8 @@ eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
 eemsom_predict <- function(som, eem_list){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   eempf_som_unsupported(som, "eemsom_predict")
-  mat <- eem2mat(eem_list, normalise = "none", na = "keep")
-  same_wl <- isTRUE(all.equal(attr(mat, "ex"), som$ex)) & isTRUE(all.equal(attr(mat, "em"), som$em))
+  mat <- eem_unfold(eem_list)
+  same_wl <- isTRUE(all.equal(attr(mat, "ex"), som$ex)) && isTRUE(all.equal(attr(mat, "em"), som$em))
   if(!same_wl) stop("The wavelengths of eem_list differ from the self-organising map! Please consider eem_red2smallest() or eem_extend2largest().")
   mat <- mat[, som$keep, drop = FALSE]
   mat <- mat / eem_normfactors(mat, som$normalise)
@@ -206,7 +216,7 @@ eemsom_predict <- function(som, eem_list){
 #' @return integer vector of clusters
 #' @noRd
 eemsom_clusterunits <- function(codes, k, method = "complete", seed = 42){
-  if(!is.numeric(k) | length(k) != 1 || k < 1 || k > nrow(codes)) stop("k needs to be a number between 1 and the number of units (", nrow(codes), ")!")
+  if(!is.numeric(k) || length(k) != 1 || k < 1 || k > nrow(codes)) stop("k needs to be a number between 1 and the number of units (", nrow(codes), ")!")
   hc_methods <- c("ward.D", "ward.D2", "single", "complete", "average", "mcquitty", "median", "centroid")
   method <- match.arg(method, c(hc_methods, "kmeans"))
   if(method == "kmeans"){
@@ -243,7 +253,7 @@ eemsom_kcriteria <- function(codes, k, method = "complete", seed = 42){
 #' @param mat matrix, objects in rows
 #' @param cl clusters
 #'
-#' @return numeric
+#' @return numeric, Inf if two clusters have identical centres
 #' @noRd
 eemsom_dbindex <- function(mat, cl){
   groups <- sort(unique(cl))
@@ -253,7 +263,10 @@ eemsom_dbindex <- function(mat, cl){
   })
   cdist <- as.matrix(dist(centres))
   mean(sapply(seq_along(groups), function(i){
-    max((scatter[i] + scatter[-i]) / cdist[i, -i])
+    ratio <- (scatter[i] + scatter[-i]) / cdist[i, -i]
+    # clusters with identical centres are not separated at all (avoids NaN from 0 / 0)
+    ratio[cdist[i, -i] == 0] <- Inf
+    max(ratio)
   }))
 }
 

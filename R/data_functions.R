@@ -2,13 +2,15 @@
 #'
 #' @description Each EEM in an eemlist is unfolded into a vector. The result is a matrix with one row per sample and one column per pair of excitation and emission wavelengths. This matrix is the input for the self-organising map in \code{\link{eemsom}}. The unfolding can be reversed by \code{\link{mat2eem}}.
 #'
-#' @param eem_list object of class eemlist. All EEMs need to have the same excitation and emission wavelengths.
+#' @param eem_list object of class eemlist. All EEMs need to have the same excitation and emission wavelengths and unique sample names.
 #' @param normalise normalisation of each sample: \code{"sd"} (default) divides each EEM by its standard deviation like \code{\link[staRdom]{norm_array}}, \code{"max"} by its maximum (Ejarque-Gonzalez and Butturini 2014), \code{"sum"} by the sum of its fluorescence and \code{"none"} keeps the original values.
-#' @param na handling of missing values (e.g. removed scatter): \code{"remove"} (default) removes wavelength pairs that are missing in at least one sample, \code{"keep"} keeps them.
+#' @param na handling of missing values (e.g. removed scatter): \code{"remove"} (default) removes wavelength pairs that are missing in at least one sample, \code{"keep"} keeps wavelength pairs that are missing in some of the samples. Wavelength pairs that are missing in all samples are always removed, see details.
 #'
 #' @details Columns are named "ex|em", e.g. "250|450". The EEM matrix is unfolded column-wise, so emission wavelengths change faster than excitation wavelengths.
 #'
-#' Normalisation removes differences in concentration and focuses on the shape of the EEMs. The normalisation factors are calculated from the remaining wavelength pairs (after removing missing values) and are saved as an attribute.
+#' Normalisation removes differences in concentration and focuses on the shape of the EEMs. The normalisation factors are calculated from the remaining wavelength pairs (after removing missing values) and are saved as an attribute. They need to be positive, so EEMs with a maximum or a sum of zero or below cannot be normalised with \code{"max"} or \code{"sum"}.
+#'
+#' Wavelength pairs that are missing in all samples (e.g. scatter that was removed but not interpolated) carry no information and are removed even with \code{na = "keep"}. Otherwise, the self-organising map would contain arbitrary values for them, because kohonen fills missing values in the initial codebook vectors with random values. With \code{na = "keep"}, kohonen calculates the distances between samples and codebook vectors from the available wavelength pairs and scales them up to the number of all wavelength pairs.
 #'
 #' @return A matrix with samples in rows and wavelength pairs in columns. Attributes: \code{ex} and \code{em} (wavelengths of the original EEMs), \code{keep} (logical vector stating which of the unfolded wavelength pairs are columns of the matrix), \code{samples}, \code{normalise} and \code{norm_factors}.
 #' @export
@@ -16,6 +18,7 @@
 #' @references Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
 #' @seealso \code{\link{mat2eem}}, \code{\link[staRdom]{eem2array}}
+#' @family self-organising maps
 #'
 #' @examples
 #' data(eem_list)
@@ -24,22 +27,21 @@
 #' dim(m)
 #' attr(m, "norm_factors")
 eem2mat <- function(eem_list, normalise = "sd", na = "remove"){
-  eem_checkmat(eem_list)
   normalise <- match.arg(normalise, c("sd", "max", "sum", "none"))
   na <- match.arg(na, c("remove", "keep"))
-  ex <- eem_list[[1]]$ex
-  em <- eem_list[[1]]$em
-  samples <- eem_names(eem_list)
-  mat <- do.call(rbind, lapply(eem_list, function(eem) as.vector(eem$x)))
-  colnames(mat) <- paste0(rep(ex, each = length(em)), "|", rep(em, times = length(ex)))
-  rownames(mat) <- samples
-  keep <- rep(TRUE, ncol(mat))
-  if(na == "remove") keep <- !apply(is.na(mat), 2, any)
-  if(!any(keep)) stop("all wavelength pairs contain missing values in at least one sample! Please consider na = \"keep\" or eem_interp().")
+  mat <- eem_unfold(eem_list)
+  ex <- attr(mat, "ex")
+  em <- attr(mat, "em")
+  samples <- attr(mat, "samples")
+  nna <- colSums(is.na(mat))
+  # wavelength pairs that are missing in all samples cannot be used, kohonen would fill them with random values
+  keep <- unname(if(na == "remove") nna == 0 else nna < nrow(mat))
+  if(!any(keep)){
+    if(na == "remove") stop("all wavelength pairs contain missing values in at least one sample! Please consider na = \"keep\" or eem_interp().")
+    stop("all wavelength pairs are missing in all samples!")
+  }
   mat <- mat[, keep, drop = FALSE]
   norm_factors <- eem_normfactors(mat, normalise)
-  bad <- !is.finite(norm_factors) | norm_factors == 0
-  if(any(bad)) stop("normalisation factors could not be calculated for the samples ", paste(samples[bad], collapse = ", "), "!")
   mat <- mat / norm_factors
   attr(mat, "ex") <- ex
   attr(mat, "em") <- em
@@ -61,10 +63,11 @@ eem2mat <- function(eem_list, normalise = "sd", na = "remove"){
 #' @param samples sample names for the EEMs
 #' @param norm_factors optional numeric vector, rows of \code{mat} are multiplied by these factors to reverse a normalisation. NULL (default) leaves the values unchanged.
 #'
-#' @return object of class eemlist
+#' @return object of class eemlist. The EEMs have no file name and the attributes used by eemR (e.g. \code{is_blank_corrected}) are NA.
 #' @export
 #'
 #' @seealso \code{\link{eem2mat}}
+#' @family self-organising maps
 #'
 #' @examples
 #' data(eem_list)
@@ -72,10 +75,11 @@ eem2mat <- function(eem_list, normalise = "sd", na = "remove"){
 #' m <- eem2mat(eem_list)
 #' eem_list2 <- mat2eem(m)                                         # normalised EEMs
 #' eem_list3 <- mat2eem(m, norm_factors = attr(m, "norm_factors")) # original values
+#' eem_list2
 #' ggeem(eem_list2)
 mat2eem <- function(mat, ex = attr(mat, "ex"), em = attr(mat, "em"), keep = attr(mat, "keep"), samples = rownames(mat), norm_factors = NULL){
   if(is.null(dim(mat))) mat <- matrix(mat, nrow = 1)
-  if(is.null(ex) | is.null(em)) stop("excitation and emission wavelengths are missing!")
+  if(is.null(ex) || is.null(em)) stop("excitation and emission wavelengths are missing!")
   if(is.null(keep)) keep <- rep(TRUE, length(ex) * length(em))
   if(length(keep) != length(ex) * length(em)) stop("length of keep does not fit the wavelengths!")
   if(sum(keep) != ncol(mat)) stop("number of columns in mat does not fit the wavelengths!")
@@ -87,11 +91,31 @@ mat2eem <- function(mat, ex = attr(mat, "ex"), em = attr(mat, "em"), keep = attr
   lapply(seq_len(nrow(mat)), function(n){
     x <- rep(NA_real_, length(keep))
     x[keep] <- mat[n, ]
-    eem <- list(sample = samples[n], x = matrix(x, nrow = length(em), ncol = length(ex)), ex = ex, em = em, location = "staRsom")
-    class(eem) <- "eem"
-    eem
+    # elements and attributes like eem objects created by eemR, the attributes are needed by its print and summary methods
+    structure(list(file = NA_character_, sample = samples[n], x = matrix(x, nrow = length(em), ncol = length(ex)), ex = ex, em = em, location = "staRsom"),
+              class = "eem", is_blank_corrected = NA, is_scatter_corrected = NA, is_ife_corrected = NA, is_raman_normalized = NA, manufacturer = "staRsom")
   }) %>%
     `class<-`("eemlist")
+}
+
+#' Unfold an eemlist into a matrix without normalisation
+#'
+#' @param eem_list object of class eemlist
+#'
+#' @return matrix with samples in rows and all wavelength pairs in columns, attributes ex, em and samples
+#' @noRd
+eem_unfold <- function(eem_list){
+  eem_checkmat(eem_list)
+  ex <- eem_list[[1]]$ex
+  em <- eem_list[[1]]$em
+  samples <- eem_names(eem_list)
+  mat <- do.call(rbind, lapply(eem_list, function(eem) as.vector(eem$x)))
+  colnames(mat) <- paste0(rep(ex, each = length(em)), "|", rep(em, times = length(ex)))
+  rownames(mat) <- samples
+  attr(mat, "ex") <- ex
+  attr(mat, "em") <- em
+  attr(mat, "samples") <- samples
+  mat
 }
 
 #' Check whether an eemlist can be unfolded into a matrix
@@ -105,8 +129,13 @@ eem_checkmat <- function(eem_list){
   if(length(eem_list) < 1) stop("eem_list is empty!")
   ex <- eem_list[[1]]$ex
   em <- eem_list[[1]]$em
-  same <- sapply(eem_list, function(eem) isTRUE(all.equal(eem$ex, ex)) & isTRUE(all.equal(eem$em, em)))
+  same <- sapply(eem_list, function(eem){
+    isTRUE(all.equal(eem$ex, ex)) && isTRUE(all.equal(eem$em, em)) && identical(dim(eem$x), c(length(em), length(ex)))
+  })
   if(!all(same)) stop("dimensions mismatch! All EEMs need the same excitation and emission wavelengths. Please consider eem_red2smallest() or eem_extend2largest().")
+  samples <- eem_names(eem_list)
+  duplicates <- unique(samples[duplicated(samples)])
+  if(length(duplicates) > 0) stop("sample names need to be unique! Duplicated: ", paste(duplicates, collapse = ", "), ". Please consider eem_name_replace().")
   invisible(TRUE)
 }
 
@@ -115,13 +144,17 @@ eem_checkmat <- function(eem_list){
 #' @param mat matrix, samples in rows
 #' @param normalise normalisation method, see \code{\link{eem2mat}}
 #'
-#' @return numeric vector
-#' @importFrom stats sd
+#' @return numeric vector named by the samples, an error is thrown for factors that are not positive
+#' @importFrom stats sd setNames
 #' @noRd
 eem_normfactors <- function(mat, normalise){
-  switch(normalise,
-         sd = apply(mat, 1, sd, na.rm = TRUE),
-         max = apply(mat, 1, max, na.rm = TRUE),
-         sum = rowSums(mat, na.rm = TRUE),
-         none = rep(1, nrow(mat)))
+  norm_factors <- switch(normalise,
+                         sd = apply(mat, 1, sd, na.rm = TRUE),
+                         max = apply(mat, 1, max, na.rm = TRUE),
+                         sum = rowSums(mat, na.rm = TRUE),
+                         none = rep(1, nrow(mat)))
+  norm_factors <- setNames(as.vector(norm_factors), rownames(mat))
+  bad <- !is.finite(norm_factors) | norm_factors <= 0
+  if(any(bad)) stop("normalisation factors (", normalise, ") are not positive for the samples ", paste(rownames(mat)[bad], collapse = ", "), "!")
+  norm_factors
 }

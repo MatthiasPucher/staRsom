@@ -10,13 +10,13 @@
 #' @param seed seed for the random number generator to get reproducible results
 #' @param ... additional parameters that are passed on to \code{\link[kohonen]{som}}. The default number of iterations is \code{rlen = 100}.
 #'
-#' @details Following Barreto-Sanz and Perez-Uribe (2007), Ejarque-Gonzalez and Butturini (2014) calculated a self-organising map from the matrix of Pearson's correlations between all component planes (\code{method = "cormat"}). This matrix has as many rows and columns as wavelength pairs and the calculation gets slow with a high resolution of the EEMs.
+#' @details Following Barreto-Sanz and Perez-Uribe (2007), Ejarque-Gonzalez and Butturini (2014) calculated a self-organising map from the matrix of Pearson's correlations between all component planes (\code{method = "cormat"}). This matrix has as many rows and columns as wavelength pairs and the calculation gets slow with a high resolution of the EEMs (minutes with a few thousand wavelength pairs).
 #'
 #' With \code{method = "planes"}, each component plane is centred and scaled to length 1. The squared Euclidean distance of two such vectors equals \eqn{2(1 - r)}{2(1 - r)}, where r is their correlation. The R-mode map is calculated from these vectors directly, which is much faster and groups wavelength pairs by their correlation as well.
 #'
 #' Both methods group wavelength pairs by the correlation of their component planes, but the R-mode maps are trained on different vectors. The resulting regions are similar but not identical and the region numbers can differ.
 #'
-#' Wavelength pairs with constant component planes have no correlation and get no region (NA).
+#' Wavelength pairs with constant component planes have no correlation and get no region (NA), as well as wavelength pairs that were not used in the map.
 #'
 #' @return object of class eemsom_regions, a list containing
 #' \itemize{
@@ -34,6 +34,7 @@
 #' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
 #' @seealso \code{\link{eemsom_fri}}
+#' @family fluorescence regions
 #'
 #' @examples
 #' data(eem_list)
@@ -58,19 +59,22 @@ eemsom_regions <- function(som, k = NULL, method = "planes", dim = "auto", clust
     if(nrow(planes) > 1500) warning("method = \"cormat\" with ", nrow(planes), " wavelength pairs is slow. Please consider method = \"planes\" or a lower resolution of the EEMs.")
     planes <- tcrossprod(planes)
   }
+  pca <- eemsom_pca(planes)
   if(identical(dim, "auto")){
-    dim <- eemsom_dim(planes, topo = "hexagonal")
-  } else if(!is.numeric(dim) | length(dim) != 2 | any(dim < 1)){
+    dim <- eemsom_dim(pca, nrow(planes), topo = "hexagonal")
+  } else if(!is.numeric(dim) || length(dim) != 2 || any(dim < 1)){
     stop("dim needs to be \"auto\" or a numeric vector c(xdim, ydim)!")
   }
   grid <- somgrid(xdim = dim[1], ydim = dim[2], topo = "hexagonal")
-  args <- utils::modifyList(list(X = planes, grid = grid, rlen = 100, init = eemsom_pcainit(planes, grid), dist.fcts = "sumofsquares"), list(...))
+  args <- utils::modifyList(list(X = planes, grid = grid, rlen = 100, init = eemsom_pcainit(pca, grid, colnames(planes)), dist.fcts = "sumofsquares"), list(...))
   rsom <- with_seed(seed, do.call(kohonen::som, args))
   rcodes <- rsom$codes[[1]]
   kselect <- NULL
   if(is.null(k)){
     kselect <- eemsom_kcriteria(rcodes, k = 2:9, method = cluster_method, seed = seed)
     k <- kselect$k[which.max(kselect$silhouette)]
+  } else if(!is.numeric(k) || length(k) != 1 || k < 1 || k > nrow(rcodes)){
+    stop("k needs to be a number between 1 and the number of units of the R-mode map (", nrow(rcodes), ")!")
   }
   unit_regions <- eemsom_clusterunits(rcodes, k = k, method = cluster_method, seed = seed)
   region <- rep(NA_integer_, length(som$keep))
@@ -86,7 +90,7 @@ eemsom_regions <- function(som, k = NULL, method = "planes", dim = "auto", clust
 #' @export
 print.eemsom_regions <- function(x, ...){
   cat("Fluorescence regions from a self-organising map\n")
-  cat(" regions:", x$k, ifelse(is.null(x$kselect), "(given)", "(highest mean silhouette)"), "\n")
+  cat(" regions:", x$k, if(is.null(x$kselect)) "(given)" else "(highest mean silhouette)", "\n")
   cat(" wavelength pairs per region:\n")
   print(table(region = x$regions$region, useNA = "ifany"))
   invisible(x)
@@ -104,6 +108,9 @@ print.eemsom_regions <- function(x, ...){
 #' @export
 #'
 #' @import ggplot2
+#'
+#' @family fluorescence regions
+#' @family plots
 #'
 #' @examples
 #' data(eem_list)
@@ -138,6 +145,8 @@ ggeem.eemsom_regions <- function(data, fill_max = FALSE, ...){
 #'
 #' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
+#' @family fluorescence regions
+#'
 #' @examples
 #' data(eem_list)
 #'
@@ -146,11 +155,11 @@ ggeem.eemsom_regions <- function(data, fill_max = FALSE, ...){
 #' eemsom_fri(eem_list, regions)
 eemsom_fri <- function(eem_list, regions){
   if(!inherits(regions, "eemsom_regions")) stop("regions needs to be of class eemsom_regions!")
-  mat <- eem2mat(eem_list, normalise = "none", na = "keep")
+  mat <- eem_unfold(eem_list)
   ex <- attr(mat, "ex")
   em <- attr(mat, "em")
   reg <- regions$regions
-  same_wl <- isTRUE(all.equal(ex, unique(reg$ex))) & isTRUE(all.equal(em, unique(reg$em)))
+  same_wl <- isTRUE(all.equal(ex, unique(reg$ex))) && isTRUE(all.equal(em, unique(reg$em)))
   if(!same_wl) stop("The wavelengths of eem_list differ from the regions! Please consider eem_red2smallest() or eem_extend2largest().")
   area <- rep(eem_cellwidth(ex), each = length(em)) * rep(eem_cellwidth(em), times = length(ex))
   rs <- sort(unique(stats::na.omit(reg$region)))

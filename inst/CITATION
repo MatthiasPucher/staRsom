@@ -1,10 +1,10 @@
 bibentry(bibtype = "Manual",
          header = "To cite staRsom in publications use:",
-         title = "{staRsom}: Self-Organizing Maps for {EEMs} from {DOM}",
+         title = "{staRsom}: Self-Organising Maps for {EEMs} from {DOM}",
          author = person("Matthias", "Pucher"),
          year = "2026",
          note = sprintf("R package version %s", meta$Version),
-         textVersion = paste0("Pucher, M. (2026). staRsom: Self-Organizing Maps for EEMs from DOM. R package version ", meta$Version, ".")
+         textVersion = paste0("Pucher, M. (2026). staRsom: Self-Organising Maps for EEMs from DOM. R package version ", meta$Version, ".")
 )
 
 bibentry(bibtype = "Article",

@@ -43,6 +43,8 @@ The SOMs are calculated by the package kohonen [@wehrens_kohonen_2018].
 
 ```{r setup, message = FALSE}
 library(staRsom)
+data(eem_list)
+data(pf_models)
 ```
 
 # Data
@@ -60,7 +62,6 @@ eem_list <- eem_exclude(eem_list, exclude = list(sample = eem_names(eem_list)[gr
 To keep the build time of this vignette short, the small subset of `r length(eem_list)` samples from staRdom is used below. With such a small number of samples, the map is very coarse and results should not be interpreted. The code works the same way with the complete data set.
 
 ```{r}
-data(eem_list)
 eem_list
 ```
 
@@ -97,6 +98,17 @@ The quality of the map is described by the quantisation error (mean distance bet
 
 ```{r}
 eemsom_quality(som)
+```
+
+## Larger data sets
+
+With the 15 samples used here, every step takes seconds. The training time grows with the numbers of samples, units and wavelength pairs: online training with the default `rlen = 500` takes about a minute for 200 EEMs with 3000 wavelength pairs and several minutes for 1000 EEMs on one core, and the stability assessment below repeats the training `nrep` times. Parallel batch training, fewer iterations or a lower resolution of the EEMs reduce the time. Ejarque-Gonzalez and Butturini [-@ejarque_som_2014] used 366 wavelength pairs.
+
+```{r, eval = FALSE}
+# parallel batch training with 4 cores and fewer iterations
+som_pbatch <- eemsom(eem_list, mode = "pbatch", cores = 4, rlen = 100, seed = 42)
+# lower resolution: drop every second excitation and emission wavelength
+eem_list_reduced <- eem_exclude(eem_list, list(ex = eem_list[[1]]$ex[c(FALSE, TRUE)], em = eem_list[[1]]$em[c(FALSE, TRUE)]))
 ```
 
 ## Samples on the map
@@ -185,7 +197,7 @@ fri
 
 # Stability
 
-The stability of the map is assessed by calculating maps from bootstrap samples [@debodt_reliability_2002] or leave-one-out subsets [@ejarque_som_2014]. On a stable map, pairs of samples are almost always or almost never neighbours, while a random map produces a bell-shaped distribution (compare Figure 4B in Ejarque-Gonzalez and Butturini [-@ejarque_som_2014]). More repetitions (`nrep`) give more reliable results.
+The stability of the map is assessed by calculating maps from bootstrap samples [@debodt_reliability_2002] or leave-one-out subsets [@ejarque_som_2014]. On a stable map, pairs of samples are almost always or almost never neighbours, while a random map produces a bell-shaped distribution (compare Figure 4B in Ejarque-Gonzalez and Butturini [-@ejarque_som_2014]). More repetitions (`nrep`) give more reliable results. Each repetition trains a new map with the settings of `som`, so `cores` and the advice for larger data sets above apply here as well.
 
 ```{r}
 stab <- eemsom_stability(eem_list, som, nrep = 10, cores = cores)
@@ -228,7 +240,6 @@ A high distance compared to the training samples indicates that a sample is not 
 Instead of the EEMs, the loadings of a PARAFAC model can be arranged on a map. Cuss et al. [-@cuss_ph_2014] found a clearer separation of DOM sources with the relative contributions of the components than with the EEMs. `eempf_som()` uses the Fmax values of each component, divided by their sum per sample (`normalise = TRUE`). Here, we use the six-component model of the complete drEEM data set from staRdom.
 
 ```{r}
-data(pf_models)
 pfsom <- eempf_som(pf4[[1]], seed = 42)
 pfsom
 eemsom_quality(pfsom)

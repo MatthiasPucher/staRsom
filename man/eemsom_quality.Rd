@@ -17,7 +17,7 @@ Quality measures of a self-organising map
 }
 \details{
 \itemize{
-  \item quantisation_error: mean Euclidean distance between samples and their prototypes
+  \item quantisation_error: mean Euclidean distance between samples and their prototypes, see \code{\link{eemsom_samples}} for the handling of missing values
   \item topographic_error: share of samples whose best and second best matching units are not neighbours (six neighbours on hexagonal maps, eight including the diagonals on rectangular maps, see \code{\link[kohonen]{unit.distances}})
   \item explained_variance: share of the total sum of squares of the (normalised) data explained by the prototypes
 }
@@ -31,3 +31,11 @@ eemsom_quality(som)
 \references{
 Kohonen, T. (2013). Essentials of the self-organizing map. Neural Networks 37, 52-65. \doi{10.1016/j.neunet.2012.09.018}
 }
+\seealso{
+Other map results:
+\code{\link[=eemsom_codes]{eemsom_codes()}},
+\code{\link[=eemsom_predict]{eemsom_predict()}},
+\code{\link[=eemsom_samples]{eemsom_samples()}},
+\code{\link[=eemsom_split]{eemsom_split()}}
+}
+\concept{map results}

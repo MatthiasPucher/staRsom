@@ -18,7 +18,7 @@ data frame with columns sample, unit, x, y, distance and cluster like \code{\lin
 New EEMs are normalised like the training data and assigned to their best matching unit.
 }
 \details{
-Missing values in the new samples are ignored when calculating the distances.
+Only the wavelength pairs used in the map are considered. Missing values in the new samples are ignored when calculating the distances, which are scaled up to the number of all wavelength pairs as in kohonen (see \code{\link{eemsom_samples}}).
 }
 \examples{
 data(eem_list)
@@ -28,3 +28,11 @@ som <- eemsom_cluster(som, k = 3)
 # usually, new samples are mapped. Here, the training samples are used.
 eemsom_predict(som, eem_list)
 }
+\seealso{
+Other map results:
+\code{\link[=eemsom_codes]{eemsom_codes()}},
+\code{\link[=eemsom_quality]{eemsom_quality()}},
+\code{\link[=eemsom_samples]{eemsom_samples()}},
+\code{\link[=eemsom_split]{eemsom_split()}}
+}
+\concept{map results}

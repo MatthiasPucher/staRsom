@@ -21,3 +21,13 @@ data(eem_list)
 som <- eemsom(eem_list, rlen = 100)
 eemsom_plot_training(som)
 }
+\seealso{
+Other plots:
+\code{\link[=eemsom_plot_cplane]{eemsom_plot_cplane()}},
+\code{\link[=eemsom_plot_map]{eemsom_plot_map()}},
+\code{\link[=eemsom_plot_silhouette]{eemsom_plot_silhouette()}},
+\code{\link[=eemsom_plot_stability]{eemsom_plot_stability()}},
+\code{\link[=ggeem.eemsom]{ggeem.eemsom()}},
+\code{\link[=ggeem.eemsom_regions]{ggeem.eemsom_regions()}}
+}
+\concept{plots}

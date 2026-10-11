@@ -1,88 +1,134 @@
 test_that("eemsom returns a map of class eemsom", {
-  data(eem_list, package = "staRdom")
-  som <- eemsom(eem_list, rlen = 50)
-  expect_s3_class(som, "eemsom")
-  expect_s3_class(som$som, "kohonen")
-  expect_equal(som$samples, eemR::eem_names(eem_list))
-  expect_lte(nrow(som$som$codes[[1]]), length(eem_list))
-  expect_output(print(som), "Self-organising map of 15 EEMs")
+  expect_s3_class(som_test, "eemsom")
+  expect_s3_class(som_test$som, "kohonen")
+  expect_equal(som_test$samples, eemR::eem_names(eem_list))
+  expect_lte(nrow(som_test$som$codes[[1]]), length(eem_list))
+  expect_output(print(som_test), "Self-organising map of 15 EEMs")
+  expect_named(som_test$settings, c("grid", "rlen", "alpha", "mode", "cores", "dist.fcts", "init"))
+  # the data are always kept, they are needed by the other functions
+  expect_false(is.null(eemsom(eem_list, rlen = 10, keep.data = FALSE)$som$data))
 })
 
 test_that("results are reproducible with a seed", {
-  data(eem_list, package = "staRdom")
-  s1 <- eemsom(eem_list, rlen = 50, seed = 3)
-  s2 <- eemsom(eem_list, rlen = 50, seed = 3)
-  s3 <- eemsom(eem_list, rlen = 50, seed = 4)
+  s1 <- eemsom(eem_list, rlen = 20, seed = 3)
+  s2 <- eemsom(eem_list, rlen = 20, seed = 3)
+  s3 <- eemsom(eem_list, rlen = 20, seed = 4)
   expect_identical(s1$som$codes, s2$som$codes)
   expect_false(identical(s1$som$codes, s3$som$codes))
-  s4 <- eemsom(eem_list, rlen = 50, init = "random", seed = 3)
-  s5 <- eemsom(eem_list, rlen = 50, init = "random", seed = 3)
+  s4 <- eemsom(eem_list, rlen = 20, init = "random", seed = 3)
+  s5 <- eemsom(eem_list, rlen = 20, init = "random", seed = 3)
   expect_identical(s4$som$codes, s5$som$codes)
 })
 
 test_that("the random number generator state is restored", {
-  data(eem_list, package = "staRdom")
   set.seed(1)
   r1 <- runif(1)
   set.seed(1)
-  som <- eemsom(eem_list, rlen = 20, seed = 99)
+  som <- eemsom(eem_list, rlen = 10, seed = 99)
   expect_equal(runif(1), r1)
 })
 
 test_that("map size can be set", {
-  data(eem_list, package = "staRdom")
   som <- eemsom(eem_list, dim = c(3, 2), topo = "rectangular", rlen = 20)
   expect_equal(c(som$som$grid$xdim, som$som$grid$ydim), c(3, 2))
   expect_equal(som$som$grid$topo, "rectangular")
   expect_warning(eemsom(eem_list, dim = c(5, 5), rlen = 20), "more units")
   expect_error(eemsom(eem_list, dim = 4), "dim")
+  expect_error(eemsom(eem_list, dim = c("a", "b")), "dim")
+})
+
+test_that("automatic map size follows the SOM Toolbox", {
+  # 5 sqrt(n) units, side ratio from the standard deviations along the first two principal components
+  expect_equal(eemsom_dim(list(d = c(1, 1)), 100), c(7, 7))
+  expect_equal(eemsom_dim(list(d = c(4, 1)), 100), c(3, 17))
+  # extreme ratios (above the square root of the number of units) are replaced by 1
+  expect_equal(eemsom_dim(list(d = c(100, 1)), 100), c(7, 7))
+  expect_equal(eemsom_dim(list(d = c(1, 1)), 100, topo = "rectangular"), c(7, 7))
+  expect_equal(eemsom_dim(list(d = c(1, 1)), 1000), c(12, 13))
+  # not more units than samples
+  expect_lte(prod(eemsom_dim(list(d = c(2, 1)), 15)), 16)
+  expect_equal(c(som_test$som$grid$xdim, som_test$som$grid$ydim), c(3, 5))
+  el3 <- structure(eem_list[1:3], class = "eemlist")
+  expect_warning(eemsom(el3, rlen = 10), "more units")
 })
 
 test_that("other training modes work", {
-  data(eem_list, package = "staRdom")
   expect_s3_class(eemsom(eem_list, mode = "batch", rlen = 20), "eemsom")
   expect_s3_class(eemsom(eem_list, mode = "pbatch", rlen = 20, cores = 1), "eemsom")
 })
 
 test_that("each sample is assigned to exactly one unit", {
-  data(eem_list, package = "staRdom")
-  som <- eemsom(eem_list, rlen = 50)
-  smp <- eemsom_samples(som)
+  smp <- eemsom_samples(som_test)
   expect_equal(nrow(smp), length(eem_list))
-  expect_equal(smp$sample, som$samples)
-  expect_true(all(smp$unit %in% seq_len(nrow(som$som$codes[[1]]))))
+  expect_equal(smp$sample, som_test$samples)
+  expect_true(all(smp$unit %in% seq_len(nrow(som_test$som$codes[[1]]))))
   expect_true(all(smp$distance >= 0))
   expect_true(all(is.na(smp$cluster)))
 })
 
 test_that("prototypes are returned as eemlist", {
-  data(eem_list, package = "staRdom")
-  som <- eemsom(eem_list, rlen = 50)
-  codes <- eemsom_codes(som)
+  codes <- eemsom_codes(som_test)
   expect_s3_class(codes, "eemlist")
-  expect_length(codes, nrow(som$som$codes[[1]]))
+  expect_length(codes, nrow(som_test$som$codes[[1]]))
   expect_equal(dim(codes[[1]]$x), dim(eem_list[[1]]$x))
-  codes_dn <- eemsom_codes(som, denormalise = TRUE)
-  u <- som$som$unit.classif[1]
-  expect_equal(codes_dn[[u]]$x, codes[[u]]$x * mean(som$norm_factors[som$som$unit.classif == u]))
+  expect_output(print(codes), "V1")
+  codes_dn <- eemsom_codes(som_test, denormalise = TRUE)
+  u <- som_test$som$unit.classif[1]
+  expect_equal(codes_dn[[u]]$x, codes[[u]]$x * mean(som_test$norm_factors[som_test$som$unit.classif == u]))
 })
 
 test_that("quality measures are calculated", {
-  data(eem_list, package = "staRdom")
-  som <- eemsom(eem_list, rlen = 50)
-  q <- eemsom_quality(som)
+  q <- eemsom_quality(som_test)
   expect_named(q, c("quantisation_error", "topographic_error", "explained_variance"))
-  expect_equal(q$quantisation_error, mean(sqrt(som$som$distances)))
+  expect_equal(q$quantisation_error, mean(sqrt(som_test$som$distances)))
   expect_true(q$topographic_error >= 0 & q$topographic_error <= 1)
   expect_true(q$explained_variance > 0 & q$explained_variance <= 1)
 })
 
+test_that("topographic error counts diagonal neighbours on rectangular maps", {
+  som <- eemsom(eem_list, dim = c(3, 3), topo = "rectangular", rlen = 20)
+  d <- eemsom_distmat(som$som$data[[1]], som$som$codes[[1]])
+  bmu2 <- t(apply(d, 1, function(r) order(r)[1:2]))
+  pts <- som$som$grid$pts
+  # Chebyshev distance between the two best matching units
+  cheb <- pmax(abs(pts[bmu2[, 1], 1] - pts[bmu2[, 2], 1]), abs(pts[bmu2[, 1], 2] - pts[bmu2[, 2], 2]))
+  expect_equal(eemsom_quality(som)$topographic_error, mean(cheb > 1))
+})
+
+test_that("distances to the codebook vectors are the squared Euclidean distances", {
+  mat <- som_test$som$data[[1]]
+  codes <- som_test$som$codes[[1]]
+  d <- eemsom_distmat(mat, codes)
+  expect_equal(dim(d), c(nrow(mat), nrow(codes)))
+  expect_equal(d[2, 3], sum((mat[2, ] - codes[3, ])^2))
+  expect_null(dimnames(d))
+  # missing values: distance from the available variables, scaled up like in kohonen
+  m <- mat[1:2, 1:10]
+  m[1, 1:4] <- NA
+  d <- eemsom_distmat(m, codes[1:2, 1:10])
+  expect_equal(d[1, 1], sum((m[1, 5:10] - codes[1, 5:10])^2) * 10 / 6)
+  expect_equal(d[2, 2], sum((m[2, ] - codes[2, 1:10])^2))
+})
+
 test_that("missing values are handled", {
-  data(eem_list, package = "staRdom")
-  el <- eem_rem_scat(eem_list, remove_scatter = c(TRUE, TRUE, TRUE, TRUE), remove_scatter_width = c(15, 15, 15, 15))
-  som_r <- eemsom(el, rlen = 20)
-  expect_lt(sum(som_r$keep), length(som_r$keep))
-  som_k <- eemsom(el, na = "keep", rlen = 20)
-  expect_equal(sum(som_k$keep), length(som_k$keep))
-  expect_true(all(is.na(eemsom_codes(som_r)[[1]]$x[!som_r$keep])))
+  expect_lt(sum(som_scatter$keep), length(som_scatter$keep))
+  expect_true(all(is.na(eemsom_codes(som_scatter)[[1]]$x[!som_scatter$keep])))
+  # na = "keep": pairs missing in all samples are removed, pairs missing in one sample are kept
+  all_missing <- Reduce(`&`, lapply(eem_partial, function(eem) is.na(eem$x)))
+  expect_equal(sum(som_keep$keep), sum(!all_missing))
+  expect_true(anyNA(som_keep$som$data[[1]]))
+  codes <- eemsom_codes(som_keep)
+  expect_true(all(is.na(codes[[1]]$x[all_missing])))
+  expect_false(anyNA(codes[[1]]$x[!all_missing]))
+  expect_equal(eemsom(eem_partial, na = "k", rlen = 10)$keep, som_keep$keep)
+})
+
+test_that("distances agree between kohonen and staRsom with missing values", {
+  smp <- eemsom_samples(som_keep)
+  pr <- eemsom_predict(som_keep, eem_partial)
+  expect_equal(pr$unit, smp$unit)
+  expect_equal(pr$distance, smp$distance)
+  expect_equal(eemsom_quality(som_keep)$quantisation_error, mean(smp$distance))
+  p <- eemsom_plot_map(som_keep, type = "quality")
+  expect_s3_class(p, "ggplot")
 })

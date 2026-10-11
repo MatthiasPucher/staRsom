@@ -4,9 +4,9 @@
 \name{staRsom-package}
 \alias{staRsom}
 \alias{staRsom-package}
-\title{staRsom: Self-Organizing Maps for EEMs from DOM}
+\title{staRsom: Self-Organising Maps for EEMs from DOM}
 \description{
-Self-organizing maps (SOM, Kohonen 2013) \doi{10.1016/j.neunet.2012.09.018} for excitation emission matrix (EEM) data of dissolved organic matter (DOM) prepared with 'staRdom'. Samples are arranged on a map, grouped by clustering the prototype EEMs and fluorescence regions are derived from correlated component planes following Ejarque-Gonzalez and Butturini (2014) \doi{10.1371/journal.pone.0099618}. Results can be split into sample groups for subsequent PARAFAC analyses.
+Self-organising maps (SOM, Kohonen 2013) \doi{10.1016/j.neunet.2012.09.018} for excitation emission matrix (EEM) data of dissolved organic matter (DOM) prepared with 'staRdom'. Samples are arranged on a map, grouped by clustering the prototype EEMs and fluorescence regions are derived from correlated component planes following Ejarque-Gonzalez and Butturini (2014) \doi{10.1371/journal.pone.0099618}. Results can be split into sample groups for subsequent PARAFAC analyses.
 }
 \details{
 staRsom follows the approach of Ejarque-Gonzalez and Butturini (2014): EEMs are arranged on a self-organising map (\code{\link{eemsom}}), the prototypes are clustered to find groups of samples (\code{\link{eemsom_cluster}}) and wavelength pairs with correlated component planes are grouped into fluorescence regions (\code{\link{eemsom_regions}}). Please see the vignette for the complete workflow: \code{vignette("SOM_analysis_of_EEM", package = "staRsom")}.

@@ -7,11 +7,11 @@
 eem2mat(eem_list, normalise = "sd", na = "remove")
 }
 \arguments{
-\item{eem_list}{object of class eemlist. All EEMs need to have the same excitation and emission wavelengths.}
+\item{eem_list}{object of class eemlist. All EEMs need to have the same excitation and emission wavelengths and unique sample names.}
 
 \item{normalise}{normalisation of each sample: \code{"sd"} (default) divides each EEM by its standard deviation like \code{\link[staRdom]{norm_array}}, \code{"max"} by its maximum (Ejarque-Gonzalez and Butturini 2014), \code{"sum"} by the sum of its fluorescence and \code{"none"} keeps the original values.}
 
-\item{na}{handling of missing values (e.g. removed scatter): \code{"remove"} (default) removes wavelength pairs that are missing in at least one sample, \code{"keep"} keeps them.}
+\item{na}{handling of missing values (e.g. removed scatter): \code{"remove"} (default) removes wavelength pairs that are missing in at least one sample, \code{"keep"} keeps wavelength pairs that are missing in some of the samples. Wavelength pairs that are missing in all samples are always removed, see details.}
 }
 \value{
 A matrix with samples in rows and wavelength pairs in columns. Attributes: \code{ex} and \code{em} (wavelengths of the original EEMs), \code{keep} (logical vector stating which of the unfolded wavelength pairs are columns of the matrix), \code{samples}, \code{normalise} and \code{norm_factors}.
@@ -22,7 +22,9 @@ Each EEM in an eemlist is unfolded into a vector. The result is a matrix with on
 \details{
 Columns are named "ex|em", e.g. "250|450". The EEM matrix is unfolded column-wise, so emission wavelengths change faster than excitation wavelengths.
 
-Normalisation removes differences in concentration and focuses on the shape of the EEMs. The normalisation factors are calculated from the remaining wavelength pairs (after removing missing values) and are saved as an attribute.
+Normalisation removes differences in concentration and focuses on the shape of the EEMs. The normalisation factors are calculated from the remaining wavelength pairs (after removing missing values) and are saved as an attribute. They need to be positive, so EEMs with a maximum or a sum of zero or below cannot be normalised with \code{"max"} or \code{"sum"}.
+
+Wavelength pairs that are missing in all samples (e.g. scatter that was removed but not interpolated) carry no information and are removed even with \code{na = "keep"}. Otherwise, the self-organising map would contain arbitrary values for them, because kohonen fills missing values in the initial codebook vectors with random values. With \code{na = "keep"}, kohonen calculates the distances between samples and codebook vectors from the available wavelength pairs and scales them up to the number of all wavelength pairs.
 }
 \examples{
 data(eem_list)
@@ -36,4 +38,10 @@ Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation
 }
 \seealso{
 \code{\link{mat2eem}}, \code{\link[staRdom]{eem2array}}
+
+Other self-organising maps:
+\code{\link[=eempf_som]{eempf_som()}},
+\code{\link[=eemsom]{eemsom()}},
+\code{\link[=mat2eem]{mat2eem()}}
 }
+\concept{self-organising maps}

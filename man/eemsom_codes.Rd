@@ -12,7 +12,7 @@ eemsom_codes(som, denormalise = FALSE)
 \item{denormalise}{logical, if TRUE, each prototype is multiplied by the mean normalisation factor of the samples mapped to the unit (the mean of all samples for empty units). The result has the scale of the original data.}
 }
 \value{
-object of class eemlist, samples are named by the unit (e.g. "V1")
+object of class eemlist, samples are named by the unit (e.g. "V1"), see \code{\link{mat2eem}}
 }
 \description{
 The codebook vectors of the units are converted to EEMs.
@@ -25,5 +25,14 @@ data(eem_list)
 
 som <- eemsom(eem_list, rlen = 100)
 codes <- eemsom_codes(som)
+codes
 ggeem(codes)
 }
+\seealso{
+Other map results:
+\code{\link[=eemsom_predict]{eemsom_predict()}},
+\code{\link[=eemsom_quality]{eemsom_quality()}},
+\code{\link[=eemsom_samples]{eemsom_samples()}},
+\code{\link[=eemsom_split]{eemsom_split()}}
+}
+\concept{map results}

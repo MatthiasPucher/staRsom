@@ -20,6 +20,7 @@
 #' @references Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
 #' @seealso \code{\link[staRdom]{ggeem}}, \code{\link{eemsom_codes}}
+#' @family plots
 #'
 #' @examples
 #' data(eem_list)
@@ -56,7 +57,7 @@ ggeem.eemsom <- function(data, fill_max = FALSE, units = NULL, denormalise = FAL
 #' \itemize{
 #'   \item \code{"counts"}: number of samples mapped to each unit
 #'   \item \code{"umatrix"}: unified distance matrix, mean Euclidean distance between the prototype of a unit and the prototypes of its direct neighbours. High values separate groups of similar units.
-#'   \item \code{"quality"}: mean distance between samples and the prototype of their unit
+#'   \item \code{"quality"}: mean distance between the samples of a unit and its prototype, see \code{\link{eemsom_samples}}
 #'   \item \code{"cluster"}: clusters of the units
 #'   \item \code{"samples"}: samples as points on their units, the units are coloured by cluster if available
 #' }
@@ -76,6 +77,8 @@ ggeem.eemsom <- function(data, fill_max = FALSE, units = NULL, denormalise = FAL
 #'
 #' @references Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
+#' @family plots
+#'
 #' @examples
 #' data(eem_list)
 #'
@@ -89,7 +92,7 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE)
   grid <- som$som$grid
   nu <- nrow(grid$pts)
   unit <- som$som$unit.classif
-  if(type == "cluster" & is.null(som$clusters)) stop("The units have not been clustered yet!")
+  if(type == "cluster" && is.null(som$clusters)) stop("The units have not been clustered yet!")
   value <- switch(type,
                   counts = tabulate(unit, nbins = nu),
                   umatrix = eemsom_umatrix(som),
@@ -106,7 +109,7 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE)
     plot <- plot +
       scale_fill_viridis_c(na.value = "white") +
       labs(fill = switch(type, counts = "samples", umatrix = "distance", quality = "distance"))
-  } else if(type == "samples" & is.null(som$clusters)){
+  } else if(type == "samples" && is.null(som$clusters)){
     plot <- plot +
       scale_fill_manual(values = "white", na.value = "white", guide = "none")
   } else {
@@ -148,6 +151,8 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE)
 #'
 #' @references Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
+#' @family plots
+#'
 #' @examples
 #' data(eem_list)
 #'
@@ -165,16 +170,16 @@ eemsom_plot_cplane <- function(som, ex = NULL, em = NULL, comps = NULL, scale = 
   codes <- som$som$codes[[1]]
   poly <- eemsom_polygons(som$som$grid)
   if(inherits(som, "eempf_som")){
-    if(!is.null(ex) | !is.null(em)) stop("Please use comps instead of ex and em for maps of PARAFAC loadings!")
+    if(!is.null(ex) || !is.null(em)) stop("Please use comps instead of ex and em for maps of PARAFAC loadings!")
     if(is.null(comps)) comps <- colnames(codes)
     if(is.numeric(comps)) comps <- colnames(codes)[comps]
-    if(any(is.na(comps)) | !all(comps %in% colnames(codes))) stop("comps need to be numbers or names of the PARAFAC components!")
+    if(any(is.na(comps)) || !all(comps %in% colnames(codes))) stop("comps need to be numbers or names of the PARAFAC components!")
     vars <- comps
     labels <- comps
-    fill_lab <- ifelse(som$normalise, "relative\nFmax", "Fmax")
+    fill_lab <- if(som$normalise) "relative\nFmax" else "Fmax"
   } else {
     if(!is.null(comps)) stop("comps can only be used for maps of PARAFAC loadings, please use ex and em!")
-    if(is.null(ex) | is.null(em) | length(ex) != length(em)) stop("ex and em need to have the same length!")
+    if(is.null(ex) || is.null(em) || length(ex) != length(em)) stop("ex and em need to have the same length!")
     exs <- sapply(ex, function(w) som$ex[which.min(abs(som$ex - w))])
     ems <- sapply(em, function(w) som$em[which.min(abs(som$em - w))])
     vars <- paste0(exs, "|", ems)
@@ -200,7 +205,7 @@ eemsom_plot_cplane <- function(som, ex = NULL, em = NULL, comps = NULL, scale = 
     coord_equal() +
     theme_void() +
     facet_wrap(~ pair) +
-    labs(fill = ifelse(scale == "each", "relative\n(per plane)", fill_lab))
+    labs(fill = if(scale == "each") "relative\n(per plane)" else fill_lab)
 }
 
 #' Plot the training progress of a self-organising map
@@ -213,6 +218,8 @@ eemsom_plot_cplane <- function(som, ex = NULL, em = NULL, comps = NULL, scale = 
 #' @export
 #'
 #' @import ggplot2
+#'
+#' @family plots
 #'
 #' @examples
 #' data(eem_list)
