@@ -1,6 +1,7 @@
-# staRsom 0.0.0.9000
+# staRsom 0.1.0
 
-* Initial package structure.
+First release.
+
 * `eem2mat()` and `mat2eem()` convert eemlists to matrices and back, including normalisation and handling of missing values.
 * `eemsom()` calculates a self-organising map from EEM data; `eemsom_samples()`, `eemsom_codes()` and `eemsom_quality()` extract results.
 * `ggeem()` method for `eemsom` objects plots the prototype EEMs arranged like the map; `eemsom_plot_map()`, `eemsom_plot_cplane()` and `eemsom_plot_training()` show map properties, component planes and the training progress.
@@ -12,3 +13,4 @@
 * The squared Euclidean distance is always used. kohonen otherwise switches to the Tanimoto distance for data in [0, 1] with row sums of 1.
 * Vignette "Self-organising maps of EEM data" with the complete workflow from staRdom data to the interpretation of the map.
 * `eemsom_plot_cplane()` gains `scale = "each"` to scale each component plane from 0 to 1.
+* `citation("staRsom")` gives the package and the method paper of Ejarque-Gonzalez and Butturini (2014).

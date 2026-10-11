@@ -123,7 +123,7 @@ ggeem.eemsom_regions <- function(data, fill_max = FALSE, ...){
 
 #' Fluorescence regional integration
 #'
-#' @description The fluorescence of each sample is integrated within each region. Following Chen et al. (2003), the volumes are normalised by the area of the region, so regions of different size can be compared.
+#' @description The fluorescence of each sample is integrated within each region. Following Chen et al. (2003), the volumes are normalised by the area of the region, so regions of different size can be compared. Ejarque-Gonzalez and Butturini (2014) quantified their fluorescence components from the self-organising map in this way.
 #'
 #' @param eem_list object of class eemlist with the same wavelengths as the self-organising map used for the regions. Usually, these are the original (not normalised) EEMs.
 #' @param regions object of class eemsom_regions, see \code{\link{eemsom_regions}}
@@ -134,6 +134,8 @@ ggeem.eemsom_regions <- function(data, fill_max = FALSE, ...){
 #' @export
 #'
 #' @references Chen, W., Westerhoff, P., Leenheer, J. A., Booksh, K. (2003). Fluorescence Excitation-Emission Matrix Regional Integration to Quantify Spectra for Dissolved Organic Matter. Environmental Science & Technology 37(24), 5701-5710. \doi{10.1021/es034354c}
+#'
+#' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
 #' @examples
 #' data(eem_list)

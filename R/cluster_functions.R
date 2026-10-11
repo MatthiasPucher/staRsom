@@ -58,6 +58,8 @@ eemsom_cluster <- function(som, k, method = "complete", seed = 42){
 #'
 #' Davies, D. L., Bouldin, D. W. (1979). A Cluster Separation Measure. IEEE Transactions on Pattern Analysis and Machine Intelligence 1(2), 224-227. \doi{10.1109/TPAMI.1979.4766909}
 #'
+#' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
+#'
 #' @examples
 #' data(eem_list)
 #'
@@ -70,7 +72,7 @@ eemsom_kselect <- function(som, k = 2:9, method = "complete", seed = 42){
 
 #' Plot silhouette widths of clustered units
 #'
-#' @description The silhouette width of each unit shows how well it fits into its cluster. Values close to 1 indicate a good fit, negative values indicate that the unit is closer to another cluster.
+#' @description The silhouette width of each unit shows how well it fits into its cluster. Values close to 1 indicate a good fit, negative values indicate that the unit is closer to another cluster. Ejarque-Gonzalez and Butturini (2014) chose the number of fluorescence components by the mean silhouette width and the number of negative silhouettes.
 #'
 #' @param x object of class eemsom with clusters (see \code{\link{eemsom_cluster}}) or of class eemsom_regions (see \code{\link{eemsom_regions}})
 #'
@@ -78,6 +80,10 @@ eemsom_kselect <- function(som, k = 2:9, method = "complete", seed = 42){
 #' @export
 #'
 #' @import ggplot2
+#'
+#' @references Rousseeuw, P. J. (1987). Silhouettes: A graphical aid to the interpretation and validation of cluster analysis. Journal of Computational and Applied Mathematics 20, 53-65. \doi{10.1016/0377-0427(87)90125-7}
+#'
+#' Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
 #' @examples
 #' data(eem_list)

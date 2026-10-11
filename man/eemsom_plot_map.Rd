@@ -32,6 +32,8 @@ Different properties of the units are shown on the map.
 Neighbours are defined like in \code{\link[kohonen]{unit.distances}}: six units on hexagonal maps, eight units including the diagonals on rectangular maps.
 
 With \code{type = "samples"}, samples of the same unit are arranged in a circle around the centre of the unit.
+
+Ejarque-Gonzalez and Butturini (2014) used the U-matrix to find regions of similar units and projected the samples, coloured by sampling site and hydrological conditions, onto the map to explore the patterns among samples.
 }
 \examples{
 data(eem_list)
@@ -40,4 +42,7 @@ som <- eemsom(eem_list, rlen = 100)
 eemsom_plot_map(som)
 eemsom_plot_map(som, type = "umatrix")
 eemsom_plot_map(som, type = "samples", colour = substr(eem_names(eem_list), 1, 2), labels = TRUE)
+}
+\references{
+Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 }

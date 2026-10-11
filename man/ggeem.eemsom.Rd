@@ -25,6 +25,8 @@ The prototype EEMs (codebook vectors) of all units or selected units are plotted
 }
 \details{
 The facet titles show the unit and the number of samples mapped to this unit. On a hexagonal map, every second row is shifted by half a unit, which cannot be shown by the facets.
+
+Ejarque-Gonzalez and Butturini (2014) used the prototype EEMs to describe the characteristic fluorescence of the regions of the map.
 }
 \examples{
 data(eem_list)
@@ -32,6 +34,9 @@ data(eem_list)
 som <- eemsom(eem_list, rlen = 100)
 ggeem(som)
 ggeem(som, units = c(1, 2), contour = TRUE)
+}
+\references{
+Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 }
 \seealso{
 \code{\link[staRdom]{ggeem}}, \code{\link{eemsom_codes}}

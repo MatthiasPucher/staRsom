@@ -10,10 +10,14 @@
 #'
 #' @details The facet titles show the unit and the number of samples mapped to this unit. On a hexagonal map, every second row is shifted by half a unit, which cannot be shown by the facets.
 #'
+#' Ejarque-Gonzalez and Butturini (2014) used the prototype EEMs to describe the characteristic fluorescence of the regions of the map.
+#'
 #' @return a ggplot object
 #' @export
 #'
 #' @import ggplot2
+#'
+#' @references Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
 #' @seealso \code{\link[staRdom]{ggeem}}, \code{\link{eemsom_codes}}
 #'
@@ -63,10 +67,14 @@ ggeem.eemsom <- function(data, fill_max = FALSE, units = NULL, denormalise = FAL
 #'
 #' With \code{type = "samples"}, samples of the same unit are arranged in a circle around the centre of the unit.
 #'
+#' Ejarque-Gonzalez and Butturini (2014) used the U-matrix to find regions of similar units and projected the samples, coloured by sampling site and hydrological conditions, onto the map to explore the patterns among samples.
+#'
 #' @return a ggplot object
 #' @export
 #'
 #' @import ggplot2
+#'
+#' @references Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
 #' @examples
 #' data(eem_list)
@@ -131,10 +139,14 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE)
 #'
 #' @details The closest wavelengths available in the data are used. With \code{scale = "common"}, values are on the scale of the normalised data.
 #'
+#' Ejarque-Gonzalez and Butturini (2014) compared the component planes of all wavelength pairs by their correlation to discriminate fluorescence components, see \code{\link{eemsom_regions}}.
+#'
 #' @return a ggplot object
 #' @export
 #'
 #' @import ggplot2
+#'
+#' @references Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 #'
 #' @examples
 #' data(eem_list)

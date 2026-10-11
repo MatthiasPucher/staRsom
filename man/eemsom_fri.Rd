@@ -15,7 +15,7 @@ eemsom_fri(eem_list, regions)
 data frame with column sample and one column per region (region_1, region_2, ...) containing the area-normalised volumes
 }
 \description{
-The fluorescence of each sample is integrated within each region. Following Chen et al. (2003), the volumes are normalised by the area of the region, so regions of different size can be compared.
+The fluorescence of each sample is integrated within each region. Following Chen et al. (2003), the volumes are normalised by the area of the region, so regions of different size can be compared. Ejarque-Gonzalez and Butturini (2014) quantified their fluorescence components from the self-organising map in this way.
 }
 \details{
 The volume of region i is \eqn{\Phi_i = \sum I(ex, em) \Delta ex \Delta em}{Phi_i = sum(I(ex, em) * dex * dem)} over all wavelength pairs of the region. The area-normalised volume is \eqn{\Phi_i \cdot A / A_i}{Phi_i * A / A_i}, with A being the total area of all regions and \eqn{A_i}{A_i} the area of region i. Missing values in a sample are ignored and the area of the region is reduced accordingly.
@@ -29,4 +29,6 @@ eemsom_fri(eem_list, regions)
 }
 \references{
 Chen, W., Westerhoff, P., Leenheer, J. A., Booksh, K. (2003). Fluorescence Excitation-Emission Matrix Regional Integration to Quantify Spectra for Dissolved Organic Matter. Environmental Science & Technology 37(24), 5701-5710. \doi{10.1021/es034354c}
+
+Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 }

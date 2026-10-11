@@ -105,14 +105,14 @@ eemsom_quality(som)
 eemsom_samples(som)
 ```
 
-`eemsom_plot_map()` shows different properties of the units. The number of samples per unit shows how the samples are distributed. The U-matrix shows the distance of each prototype to its neighbours. Units with high values separate groups of similar units.
+`eemsom_plot_map()` shows different properties of the units. The number of samples per unit shows how the samples are distributed. The U-matrix shows the distance of each prototype to its neighbours. Units with high values separate groups of similar units, low values indicate regions of similar units [@ejarque_som_2014].
 
 ```{r, fig.show = "hold", out.width = "48%", fig.width = 4, fig.height = 5}
 eemsom_plot_map(som, type = "counts")
 eemsom_plot_map(som, type = "umatrix")
 ```
 
-Samples can be coloured by metadata, e.g. the sampling site or date. Here, we use the first letters of the sample names as an example.
+Samples can be coloured by metadata, e.g. the sampling site or date. Ejarque-Gonzalez and Butturini [-@ejarque_som_2014] used this to show that samples taken during floods were mapped to a few neighbouring units along the whole river, i.e. floods homogenised the EEM shapes. Here, we use the first letters of the sample names as an example.
 
 ```{r, fig.height = 6}
 site <- substr(eem_names(eem_list), 1, 3)
@@ -121,7 +121,7 @@ eemsom_plot_map(som, type = "samples", colour = site, labels = TRUE)
 
 ## Prototype EEMs
 
-The prototypes of all units are plotted with `ggeem()`, arranged like the units on the map. The titles show the number of samples of each unit.
+The prototypes of all units are plotted with `ggeem()`, arranged like the units on the map. The titles show the number of samples of each unit. The prototypes show the characteristic fluorescence of each part of the map [@ejarque_som_2014].
 
 ```{r, fig.height = 8}
 ggeem(som)
@@ -129,7 +129,7 @@ ggeem(som)
 
 ## Component planes
 
-A component plane shows the fluorescence of one wavelength pair in all prototypes. Here, we look at the wavelengths of the peaks B, T, A and C [@coble_characterization_1996]. With one colour scale for all planes, the intensities can be compared:
+A component plane shows the fluorescence of one wavelength pair in all prototypes. Wavelength pairs with similar component planes behave similarly across the samples, which is the basis of the fluorescence regions below [@ejarque_som_2014]. Here, we look at the wavelengths of the peaks B, T, A and C [@coble_characterization_1996]. With one colour scale for all planes, the intensities can be compared:
 
 ```{r, fig.height = 6}
 eemsom_plot_cplane(som, ex = c(275, 275, 260, 350), em = c(310, 340, 450, 450))
@@ -150,6 +150,8 @@ The prototypes are clustered hierarchically with complete linkage [@ejarque_som_
 ```{r}
 eemsom_kselect(som, k = 2:8)
 ```
+
+The silhouette widths of the units show how well each unit fits into its cluster. Ejarque-Gonzalez and Butturini [-@ejarque_som_2014] chose the number of regions by a high mean silhouette and few negative silhouettes.
 
 ## Clustering
 
@@ -174,7 +176,7 @@ regions$kselect
 ggeem(regions)
 ```
 
-The fluorescence of each sample can be integrated within the regions [@chen_fri_2003]. The area-normalised volumes describe the samples independently of a PARAFAC model.
+The fluorescence of each sample can be integrated within the regions [@chen_fri_2003]. Ejarque-Gonzalez and Butturini [-@ejarque_som_2014] used these area-normalised volumes as new variables to describe their samples. They describe the samples independently of a PARAFAC model.
 
 ```{r}
 fri <- eemsom_fri(eem_list, regions)
@@ -183,7 +185,7 @@ fri
 
 # Stability
 
-The stability of the map is assessed by calculating maps from bootstrap samples [@debodt_reliability_2002] or leave-one-out subsets [@ejarque_som_2014]. On a stable map, pairs of samples are almost always or almost never neighbours, while a random map produces a bell-shaped distribution. More repetitions (`nrep`) give more reliable results.
+The stability of the map is assessed by calculating maps from bootstrap samples [@debodt_reliability_2002] or leave-one-out subsets [@ejarque_som_2014]. On a stable map, pairs of samples are almost always or almost never neighbours, while a random map produces a bell-shaped distribution (compare Figure 4B in Ejarque-Gonzalez and Butturini [-@ejarque_som_2014]). More repetitions (`nrep`) give more reliable results.
 
 ```{r}
 stab <- eemsom_stability(eem_list, som, nrep = 10, cores = cores)
@@ -257,6 +259,7 @@ ggeem(pfsom, units = units)
 * **Position:** Samples close to each other on the map have similar EEMs. The distance on the map is only meaningful between neighbouring units; distant units can be similar if the map is folded.
 * **U-matrix:** High values mark borders between groups of similar units. Groups of units with low values contain similar prototypes.
 * **Counts and empty units:** Empty units lie between groups of samples and interpolate between them. Many samples on one unit indicate a homogeneous group.
+* **Single units with high U-matrix values:** Samples with very distinctive EEMs can form clusters of a single unit, e.g. industrial effluents in Ejarque-Gonzalez and Butturini [-@ejarque_som_2014]. Such outliers are integrated in the map without distorting it, which can be checked with the stability assessment.
 * **Prototypes:** The prototype EEMs show the typical fluorescence of each part of the map. Differences between clusters can be read from their prototypes.
 * **Component planes:** Similar component planes indicate correlated fluorescence at the wavelength pairs. Gradients of peaks along the map explain the arrangement of the samples. The regions summarise these correlations.
 * **Metadata:** Colouring the samples by metadata shows whether groups on the map correspond to sites, seasons or other factors.

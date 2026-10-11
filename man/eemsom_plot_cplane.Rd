@@ -25,6 +25,8 @@ A component plane shows the value of one variable in the prototypes of all units
 }
 \details{
 The closest wavelengths available in the data are used. With \code{scale = "common"}, values are on the scale of the normalised data.
+
+Ejarque-Gonzalez and Butturini (2014) compared the component planes of all wavelength pairs by their correlation to discriminate fluorescence components, see \code{\link{eemsom_regions}}.
 }
 \examples{
 data(eem_list)
@@ -37,4 +39,7 @@ eemsom_plot_cplane(som, ex = c(275, 275, 260, 350), em = c(310, 340, 450, 450), 
 data(pf_models)
 pfsom <- eempf_som(pf4[[1]], rlen = 100)
 eemsom_plot_cplane(pfsom, scale = "each")
+}
+\references{
+Ejarque-Gonzalez, E., Butturini, A. (2014). Self-Organising Maps and Correlation Analysis as a Tool to Explore Patterns in Excitation-Emission Matrix Data Sets and to Discriminate Dissolved Organic Matter Fluorescence Components. PLoS ONE 9(6), e99618. \doi{10.1371/journal.pone.0099618}
 }
