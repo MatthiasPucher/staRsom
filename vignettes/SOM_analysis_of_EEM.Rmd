@@ -1,0 +1,265 @@
+---
+title: "Self-organising maps of EEM data"
+subtitle: "staRsom: self-organising maps for EEMs prepared with staRdom"
+author: "`r packageDescription('staRsom')$Maintainer`"
+date: "`r format(Sys.time(), '%B %e %Y')`"
+bibliography: "staRsom.bib"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Self-organising maps of EEM data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  out.width = "100%"
+)
+cores <- 2
+```
+
+# Introduction
+
+Self-organising maps (SOM) arrange samples on a two-dimensional grid of units, so that similar samples are mapped to the same or neighbouring units [@kohonen_essentials_2013]. Each unit has a prototype, which is an EEM itself in our case. Unlike PARAFAC [@murphy_fluorescence_2013], a SOM does not assume a certain structure of the data. It helps to explore large and heterogeneous data sets, to find groups of samples and to identify unusual samples [@bieroza_exploratory_2009; @ejarque_som_2014].
+
+staRsom follows the approach of Ejarque-Gonzalez and Butturini [-@ejarque_som_2014]:
+
+1. EEMs are unfolded to vectors and normalised, so the map shows differences in the shape of the EEMs rather than in concentration.
+2. A SOM is calculated from these vectors ("Q-mode").
+3. The prototypes are clustered to find groups of samples [@vesanto_clustering_2000].
+4. The component planes, the values of each wavelength pair in all prototypes, are compared by correlation. Wavelength pairs with similar component planes are grouped into fluorescence regions ("R-mode").
+5. The stability of the map is assessed by resampling [@debodt_reliability_2002].
+
+Afterwards, groups of samples can be analysed separately, e.g. by PARAFAC with staRdom [@pucher_stardom_2019]. Alternatively, a SOM can be calculated from the loadings of a PARAFAC model [@cuss_ph_2014; @wheeler_senescence_2017].
+
+The SOMs are calculated by the package kohonen [@wehrens_kohonen_2018].
+
+```{r setup, message = FALSE}
+library(staRsom)
+```
+
+# Data
+
+## drEEM example data set
+
+The drEEM tutorial data set [@murphy_fluorescence_2013] contains `r nrow(pf4[[1]]$A)` samples after removing blanks and outliers. Due to its size, it is not part of staRdom or staRsom but can be downloaded with `eem_load_dreem()` (staRdom vignette "PARAFAC analysis of EEM data"). The data is already corrected. Use the following code to work with the complete data set:
+
+```{r, eval = FALSE}
+eem_list <- eem_load_dreem()
+# remove blanks and samples that were excluded in the drEEM tutorial
+eem_list <- eem_exclude(eem_list, exclude = list(sample = eem_names(eem_list)[grepl("bl|0A", eem_names(eem_list))]))
+```
+
+To keep the build time of this vignette short, the small subset of `r length(eem_list)` samples from staRdom is used below. With such a small number of samples, the map is very coarse and results should not be interpreted. The code works the same way with the complete data set.
+
+```{r}
+data(eem_list)
+eem_list
+```
+
+## Preparing the EEMs
+
+The EEMs need the same excitation and emission wavelengths. Scattering is removed and interpolated as in a PARAFAC analysis, otherwise Raman and Rayleigh scattering would dominate the map. Additionally, the wavelengths are reduced to the range of the PARAFAC model `pf4` included in staRdom.
+
+```{r}
+eem_list <- eem_list |>
+  eem_range(ex = c(250, 455), em = c(290, 578)) |>
+  eem_rem_scat(remove_scatter = c(TRUE, TRUE, TRUE, TRUE), remove_scatter_width = c(15, 15, 18, 19)) |>
+  eem_interp(type = 1, extend = FALSE, cores = cores)
+ggeem(eem_list)
+```
+
+# Self-organising map of EEMs
+
+## Calculating the map
+
+`eemsom()` unfolds the EEMs, normalises them and calculates the map. By default, each EEM is divided by its standard deviation, like `eem_parafac(normalise = TRUE)` does. `normalise = "max"` divides by the maximum as in Ejarque-Gonzalez and Butturini [-@ejarque_som_2014]. The size of the map is chosen automatically [@vesanto_clustering_2000], but can be set with `dim`. The `seed` makes results reproducible.
+
+```{r}
+som <- eemsom(eem_list, seed = 42, verbose = TRUE)
+som
+```
+
+The training should end with a flat curve. Otherwise, `rlen` can be increased.
+
+```{r, fig.height = 3}
+eemsom_plot_training(som)
+```
+
+The quality of the map is described by the quantisation error (mean distance between samples and their prototypes), the topographic error (share of samples whose two closest units are not neighbours) and the explained variance.
+
+```{r}
+eemsom_quality(som)
+```
+
+## Samples on the map
+
+```{r}
+eemsom_samples(som)
+```
+
+`eemsom_plot_map()` shows different properties of the units. The number of samples per unit shows how the samples are distributed. The U-matrix shows the distance of each prototype to its neighbours. Units with high values separate groups of similar units.
+
+```{r, fig.show = "hold", out.width = "48%", fig.width = 4, fig.height = 5}
+eemsom_plot_map(som, type = "counts")
+eemsom_plot_map(som, type = "umatrix")
+```
+
+Samples can be coloured by metadata, e.g. the sampling site or date. Here, we use the first letters of the sample names as an example.
+
+```{r, fig.height = 6}
+site <- substr(eem_names(eem_list), 1, 3)
+eemsom_plot_map(som, type = "samples", colour = site, labels = TRUE)
+```
+
+## Prototype EEMs
+
+The prototypes of all units are plotted with `ggeem()`, arranged like the units on the map. The titles show the number of samples of each unit.
+
+```{r, fig.height = 8}
+ggeem(som)
+```
+
+## Component planes
+
+A component plane shows the fluorescence of one wavelength pair in all prototypes. Here, we look at the wavelengths of the peaks B, T, A and C [@coble_characterization_1996]. With one colour scale for all planes, the intensities can be compared:
+
+```{r, fig.height = 6}
+eemsom_plot_cplane(som, ex = c(275, 275, 260, 350), em = c(310, 340, 450, 450))
+```
+
+Scaling each plane from 0 to 1 shows the patterns of weak peaks as well:
+
+```{r, fig.height = 6}
+eemsom_plot_cplane(som, ex = c(275, 275, 260, 350), em = c(310, 340, 450, 450), scale = "each")
+```
+
+# Groups of samples
+
+## Number of clusters
+
+The prototypes are clustered hierarchically with complete linkage [@ejarque_som_2014]. `eemsom_kselect()` calculates criteria for different numbers of clusters: a high mean silhouette width [@rousseeuw_silhouettes_1987], few units with negative silhouettes, a low Davies-Bouldin index and an elbow in the within-cluster sum of squares.
+
+```{r}
+eemsom_kselect(som, k = 2:8)
+```
+
+## Clustering
+
+```{r, fig.show = "hold", out.width = "48%", fig.width = 4, fig.height = 5}
+som <- eemsom_cluster(som, k = 3)
+eemsom_plot_map(som, type = "cluster")
+eemsom_plot_silhouette(som)
+```
+
+```{r}
+table(cluster = eemsom_samples(som)$cluster)
+```
+
+# Fluorescence regions
+
+`eemsom_regions()` groups wavelength pairs whose component planes are correlated. Each region is assumed to represent a fluorescence component [@ejarque_som_2014]. If `k` is not given, it is chosen by the highest mean silhouette width. The default `method = "planes"` is a fast equivalent to the correlation matrix used by Barreto-Sanz and Pérez-Uribe [-@barreto_correlation_2007] (`method = "cormat"`).
+
+```{r}
+regions <- eemsom_regions(som)
+regions
+regions$kselect
+ggeem(regions)
+```
+
+The fluorescence of each sample can be integrated within the regions [@chen_fri_2003]. The area-normalised volumes describe the samples independently of a PARAFAC model.
+
+```{r}
+fri <- eemsom_fri(eem_list, regions)
+fri
+```
+
+# Stability
+
+The stability of the map is assessed by calculating maps from bootstrap samples [@debodt_reliability_2002] or leave-one-out subsets [@ejarque_som_2014]. On a stable map, pairs of samples are almost always or almost never neighbours, while a random map produces a bell-shaped distribution. More repetitions (`nrep`) give more reliable results.
+
+```{r}
+stab <- eemsom_stability(eem_list, som, nrep = 10, cores = cores)
+stab
+eemsom_plot_stability(stab)
+```
+
+# Further analyses
+
+## PARAFAC models for groups of samples
+
+Groups of samples can be analysed separately with PARAFAC. `eemsom_split()` returns one eemlist per cluster. A warning is shown for groups with less than `min_samples` samples, because PARAFAC models need a sufficient number of samples. The usual validation of PARAFAC models [@murphy_fluorescence_2013] has to be done for each group.
+
+```{r}
+eem_groups <- eemsom_split(eem_list, som, min_samples = 5)
+lengths(eem_groups)
+```
+
+```{r, eval = FALSE}
+pf_groups <- lapply(eem_groups, eem_parafac, comps = 3:6, normalise = TRUE, nstart = 25, cores = cores)
+```
+
+## New samples
+
+New samples can be mapped to an existing map, e.g. for monitoring. They need the same wavelengths and preparation. Here, we use the two samples staRdom excluded as outliers from the drEEM data.
+
+```{r}
+data(eem_list_outliers)
+eem_list_outliers <- eem_list_outliers |>
+  eem_rem_scat(remove_scatter = c(TRUE, TRUE, TRUE, TRUE), remove_scatter_width = c(15, 15, 18, 19)) |>
+  eem_interp(type = 1, extend = FALSE, cores = cores)
+pred <- eemsom_predict(som, eem_list_outliers)
+pred
+```
+
+A high distance compared to the training samples indicates that a sample is not well represented by the map. The distances of the two outliers (`r paste(round(pred$distance, 1), collapse = " and ")`) are much higher than those of the training samples (maximum `r round(max(eemsom_samples(som)$distance), 1)`).
+
+# Self-organising map of PARAFAC loadings
+
+Instead of the EEMs, the loadings of a PARAFAC model can be arranged on a map. Cuss et al. [-@cuss_ph_2014] found a clearer separation of DOM sources with the relative contributions of the components than with the EEMs. `eempf_som()` uses the Fmax values of each component, divided by their sum per sample (`normalise = TRUE`). Here, we use the six-component model of the complete drEEM data set from staRdom.
+
+```{r}
+data(pf_models)
+pfsom <- eempf_som(pf4[[1]], seed = 42)
+pfsom
+eemsom_quality(pfsom)
+```
+
+The component planes show the relative contribution of each PARAFAC component. Each plane is scaled individually to show the patterns of all components.
+
+```{r, fig.height = 6}
+eemsom_plot_cplane(pfsom, scale = "each")
+```
+
+Clustering, splitting and plots work as for maps of EEMs. The prototype EEMs are reconstructed from the PARAFAC components.
+
+```{r, fig.show = "hold", out.width = "48%", fig.width = 4, fig.height = 6}
+eemsom_kselect(pfsom, k = 2:8)
+pfsom <- eemsom_cluster(pfsom, k = 4)
+eemsom_plot_map(pfsom, type = "cluster")
+eemsom_plot_map(pfsom, type = "counts")
+```
+
+```{r, fig.height = 4}
+units <- which(!duplicated(pfsom$clusters))
+ggeem(pfsom, units = units)
+```
+
+# Interpreting the map
+
+* **Position:** Samples close to each other on the map have similar EEMs. The distance on the map is only meaningful between neighbouring units; distant units can be similar if the map is folded.
+* **U-matrix:** High values mark borders between groups of similar units. Groups of units with low values contain similar prototypes.
+* **Counts and empty units:** Empty units lie between groups of samples and interpolate between them. Many samples on one unit indicate a homogeneous group.
+* **Prototypes:** The prototype EEMs show the typical fluorescence of each part of the map. Differences between clusters can be read from their prototypes.
+* **Component planes:** Similar component planes indicate correlated fluorescence at the wavelength pairs. Gradients of peaks along the map explain the arrangement of the samples. The regions summarise these correlations.
+* **Metadata:** Colouring the samples by metadata shows whether groups on the map correspond to sites, seasons or other factors.
+* **Stability:** Conclusions should only be drawn from stable maps. Check the quality measures and the stability before interpreting single units.
+
+# References
