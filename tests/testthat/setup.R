@@ -13,3 +13,9 @@ som_small <- eemsom(eem_list, dim = c(3, 3), rlen = 20)
 som_scatter <- eemsom(eem_scatter, rlen = 20)
 som_keep <- eemsom(eem_partial, na = "keep", rlen = 20)
 pfsom_test <- eempf_som(pf4[[1]], rlen = 20)
+
+# EEMs prepared like the PARAFAC model pf4 (wavelength range, scatter removed and interpolated)
+eem_prepared <- eem_list |>
+  eem_range(ex = c(250, 455), em = c(290, 578)) |>
+  eem_rem_scat(remove_scatter = c(TRUE, TRUE, TRUE, TRUE), remove_scatter_width = c(15, 15, 18, 19)) |>
+  eem_interp(type = 1, extend = FALSE, cores = 1)

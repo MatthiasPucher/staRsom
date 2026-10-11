@@ -191,8 +191,8 @@ eemsom_codes <- function(som, denormalise = FALSE){
   }
   if(inherits(som, "eempf_som")){
     # prototype EEM = sum of PARAFAC components weighted by the prototype loadings
-    B <- som$components$B
-    C <- som$components$C
+    B <- som$pfmodel$B
+    C <- som$pfmodel$C
     codes <- t(apply(codes, 1, function(a) as.vector(B %*% (a * t(C))))) %>%
       `rownames<-`(rownames(codes))
   }

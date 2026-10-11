@@ -46,9 +46,32 @@ test_that("clustering, splitting and plots work with maps of PARAFAC loadings", 
   expect_error(eemsom_plot_cplane(pfsom, comps = 7), "comps")
 })
 
+test_that("new samples are mapped to maps of PARAFAC loadings", {
+  # the samples of eem_list are part of the PARAFAC model, so their loadings are reproduced
+  pr <- eemsom_predict(pfsom_test, eem_prepared)
+  expect_named(pr, c("sample", "unit", "x", "y", "distance", "cluster"))
+  expect_equal(pr$sample, eemR::eem_names(eem_prepared))
+  smp <- eemsom_samples(pfsom_test)
+  smp <- smp[match(pr$sample, smp$sample), ]
+  expect_lt(max(abs(pr$distance - smp$distance)), 0.01)
+  expect_gte(mean(pr$unit == smp$unit), 0.8)
+  # arguments for A_missing() can be given, the output of A_missing() is suppressed
+  expect_silent(pr2 <- eemsom_predict(pfsom_test, eem_prepared, cores = 1, maxit = 100))
+  expect_equal(pr2$unit, pr$unit)
+  # absolute loadings
+  pfsom_abs <- eempf_som(pf4[[1]], normalise = FALSE, rlen = 20)
+  pr_abs <- eemsom_predict(pfsom_abs, eem_prepared)
+  smp_abs <- eemsom_samples(pfsom_abs)
+  expect_lt(max(abs(pr_abs$distance - smp_abs$distance[match(pr_abs$sample, smp_abs$sample)])), 0.01)
+  # wavelengths need to fit the model
+  expect_error(eemsom_predict(pfsom_test, eem_list), "wavelengths")
+  pfsom_old <- pfsom_test
+  pfsom_old$pfmodel <- NULL
+  expect_error(eemsom_predict(pfsom_old, eem_prepared), "PARAFAC model")
+})
+
 test_that("unsupported functions give an error", {
   expect_error(eemsom_regions(pfsom_test), "not available")
-  expect_error(eemsom_predict(pfsom_test, eem_list), "not available")
   expect_error(eemsom_stability(eem_list, pfsom_test), "not available")
   expect_error(eempf_som(eem_list), "parafac")
 })

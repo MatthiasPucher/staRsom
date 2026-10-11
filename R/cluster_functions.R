@@ -174,12 +174,16 @@ eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
 
 #' Map new samples to a self-organising map
 #'
-#' @description New EEMs are normalised like the training data and assigned to their best matching unit.
+#' @description New EEMs are assigned to their best matching unit. For maps of EEMs (\code{\link{eemsom}}), they are normalised like the training data. For maps of PARAFAC loadings (\code{\link{eempf_som}}), their loadings are calculated first with the fixed emission and excitation loadings of the PARAFAC model (\code{\link[staRdom]{A_missing}}).
 #'
-#' @param som object of class eemsom, see \code{\link{eemsom}}
-#' @param eem_list object of class eemlist with the same excitation and emission wavelengths as the training data
+#' @param som object of class eemsom, see \code{\link{eemsom}} or \code{\link{eempf_som}}
+#' @param eem_list object of class eemlist with the same excitation and emission wavelengths as the training data or the PARAFAC model
+#' @param cores number of cores used by \code{\link[staRdom]{A_missing}} (maps of PARAFAC loadings only)
+#' @param ... additional arguments passed on to \code{\link[staRdom]{A_missing}} and \code{\link[staRdom]{eem_parafac}} (maps of PARAFAC loadings only), e.g. \code{maxit}. By default, \code{nstart = 1} is used because the loadings with fixed B and C modes do not depend on the start.
 #'
-#' @details Only the wavelength pairs used in the map are considered. Missing values in the new samples are ignored when calculating the distances, which are scaled up to the number of all wavelength pairs as in kohonen (see \code{\link{eemsom_samples}}).
+#' @details Maps of EEMs: only the wavelength pairs used in the map are considered. Missing values in the new samples are ignored when calculating the distances, which are scaled up to the number of all wavelength pairs as in kohonen (see \code{\link{eemsom_samples}}).
+#'
+#' Maps of PARAFAC loadings: the new EEMs need the same preparation as the EEMs of the PARAFAC model (e.g. scatter removal). Their Fmax loadings are scaled like in \code{\link{eempf_som}} (relative or absolute) and the distances refer to these loadings.
 #'
 #' @return data frame with columns sample, unit, x, y, distance and cluster like \code{\link{eemsom_samples}}
 #' @export
@@ -193,9 +197,19 @@ eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
 #' som <- eemsom_cluster(som, k = 3)
 #' # usually, new samples are mapped. Here, the training samples are used.
 #' eemsom_predict(som, eem_list)
-eemsom_predict <- function(som, eem_list){
+#'
+#' # map of PARAFAC loadings: the loadings of the new samples are calculated first
+#' data(pf_models)
+#' data(eem_list_outliers)
+#' pfsom <- eempf_som(pf4[[1]], rlen = 100)
+#' new_samples <- eem_list_outliers |>
+#'   eem_rem_scat(remove_scatter = c(TRUE, TRUE, TRUE, TRUE),
+#'                remove_scatter_width = c(15, 15, 18, 19)) |>
+#'   eem_interp(type = 1, extend = FALSE, cores = 1)
+#' eemsom_predict(pfsom, new_samples)
+eemsom_predict <- function(som, eem_list, cores = 1, ...){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
-  eempf_som_unsupported(som, "eemsom_predict")
+  if(inherits(som, "eempf_som")) return(eempf_som_predict(som, eem_list, cores = cores, ...))
   mat <- eem_unfold(eem_list)
   same_wl <- isTRUE(all.equal(attr(mat, "ex"), som$ex)) && isTRUE(all.equal(attr(mat, "em"), som$em))
   if(!same_wl) stop("The wavelengths of eem_list differ from the self-organising map! Please consider eem_red2smallest() or eem_extend2largest().")

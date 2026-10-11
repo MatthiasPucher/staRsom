@@ -23,17 +23,17 @@ eempf_som(pfmodel, dim = "auto", normalise = TRUE, seed = 42, ...)
 \item{x}{object of class eempf_som}
 }
 \value{
-object of class eempf_som and eemsom, see \code{\link{eemsom}}. Additionally, it contains the element components with the Fmax-scaled emission (B) and excitation (C) loadings of the PARAFAC model. The element normalise is the logical value of the argument and norm_factors are the sums of the Fmax values (or 1).
+object of class eempf_som and eemsom, see \code{\link{eemsom}}. Additionally, it contains the element pfmodel, the PARAFAC model with emission (B) and excitation (C) loadings scaled to Fmax (see \code{\link[staRdom]{eempf_rescaleBC}}), which is used to reconstruct prototype EEMs and to map new samples. The element normalise is the logical value of the argument and norm_factors are the sums of the Fmax values (or 1).
 }
 \description{
 Instead of the EEMs, the sample loadings (A-mode) of a PARAFAC model are arranged on a self-organising map. The loadings are scaled to Fmax, the maximum fluorescence of each component in each sample. Cuss et al. (2014) found a clearer separation of DOM sources with the relative contributions of PARAFAC components than with the EEMs themselves.
 }
 \details{
-The result can be used with the functions for self-organising maps of EEMs, e.g. \code{\link{eemsom_samples}}, \code{\link{eemsom_cluster}}, \code{\link{eemsom_split}} and the plot functions. The prototype EEM of a unit (\code{\link{eemsom_codes}}, \code{\link[staRdom]{ggeem}}) is the sum of the PARAFAC components weighted by the prototype loadings. \code{\link{eemsom_plot_cplane}} shows component planes of the PARAFAC components with the argument \code{comps}.
+The result can be used with the functions for self-organising maps of EEMs, e.g. \code{\link{eemsom_samples}}, \code{\link{eemsom_cluster}}, \code{\link{eemsom_split}} and the plot functions. The prototype EEM of a unit (\code{\link{eemsom_codes}}, \code{\link[staRdom]{ggeem}}) is the sum of the PARAFAC components weighted by the prototype loadings. \code{\link{eemsom_plot_cplane}} shows component planes of the PARAFAC components with the argument \code{comps}. \code{\link{eemsom_predict}} maps new samples after calculating their loadings with the fixed emission and excitation loadings of the PARAFAC model.
 
 Relative contributions (\code{normalise = TRUE}) are only meaningful for non-negative loadings, i.e. for models calculated with \code{const = c("nonneg", "nonneg", "nonneg")} in \code{\link[staRdom]{eem_parafac}}.
 
-\code{\link{eemsom_regions}}, \code{\link{eemsom_predict}} and \code{\link{eemsom_stability}} are not available for these maps.
+\code{\link{eemsom_regions}} and \code{\link{eemsom_stability}} are not available for these maps.
 }
 \examples{
 data(pf_models)

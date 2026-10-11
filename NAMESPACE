@@ -40,6 +40,7 @@ importFrom(parallel,
   stopCluster
 )
 importFrom(staRdom,
+  A_missing,
   eempf_rescaleBC,
   ggeem,
   norm2A

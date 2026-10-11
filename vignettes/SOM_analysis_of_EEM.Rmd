@@ -265,6 +265,12 @@ units <- which(!duplicated(pfsom$clusters))
 ggeem(pfsom, units = units)
 ```
 
+New samples are mapped after their loadings have been calculated with the fixed emission and excitation loadings of the PARAFAC model (`A_missing()` of staRdom). They need the same preparation as the EEMs of the model. Here, the two outliers prepared above are used.
+
+```{r}
+eemsom_predict(pfsom, eem_list_outliers)
+```
+
 # Interpreting the map
 
 * **Position:** Samples close to each other on the map have similar EEMs. The distance on the map is only meaningful between neighbouring units; distant units can be similar if the map is folded.

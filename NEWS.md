@@ -5,6 +5,7 @@
 * Distances of samples with missing values are scaled like in kohonen, so `eemsom_samples()`, `eemsom_predict()`, `eemsom_quality()` and `eemsom_stability()` agree. Distances are calculated by matrix products, which is much faster for large data sets.
 * `eemsom_plot_map()` gains `unit_labels` to show the numbers of the units.
 * `eemsom_regions()`: `k` can be a vector of candidates (default `2:9`) or a single number.
+* `eemsom_predict()` maps new samples to maps of PARAFAC loadings (`eempf_som()`): their loadings are calculated with the fixed emission and excitation loadings of the model (`A_missing()` of staRdom). `eempf_som` objects store the PARAFAC model in the element `pfmodel` instead of `components`.
 * Automatic map size: extreme side ratios are replaced by 1 as in the SOM Toolbox.
 * Input checks: normalisation factors need to be positive, sample names need to be unique, abbreviations of `na` are accepted, `keep.data` is always TRUE.
 * `eemsom_stability()` shows the progress with `verbose = TRUE`. Its results differ slightly from version 0.1.0 because the seeds of the repetitions are drawn differently.
