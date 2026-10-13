@@ -2,7 +2,7 @@
 
 * `eemsom_samples()` and `eemsom_predict()` give the number of samples on the unit (`hits`) and its U-matrix value (`umatrix`) for each sample. Unusual samples often occupy a unit alone that is separated from its neighbours.
 * `eemsom_stability()` with `type = "loo"` returns the leave-one-out distance of each sample (element `loo`): the distance to its best matching unit on the maps calculated without it. High values indicate candidates for outliers in a subsequent PARAFAC analysis; `print()` shows the highest values.
-* `eemsom_plot_map(type = "samples")` uses the viridis colour scale for numeric `colour` values, e.g. leave-one-out distances.
+* All plots use viridis colour scales, also for discrete values: clusters and sample colours in `eemsom_plot_map()`, regions in `ggeem()`, silhouettes and the random map in `eemsom_plot_stability()`. Numeric sample colours in `eemsom_plot_map(type = "samples")` (e.g. leave-one-out distances) use the continuous viridis scale. Sample points omit the light yellow end of viridis to remain visible on the white background.
 * Automatic map size: rounding could lead to more units than samples (e.g. 18 units for 17 samples), as documented the number of units is now limited to the number of samples.
 * Vignette: new section on outliers. Outliers are usually kept in the map; its indicators are compared with the leverage of a PARAFAC model.
 

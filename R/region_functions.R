@@ -128,7 +128,7 @@ ggeem.eemsom_regions <- function(data, fill_max = FALSE, ...){
     mutate(region = factor(region)) %>%
     ggplot(aes(x = ex, y = em, fill = region)) +
     geom_tile() +
-    scale_fill_discrete(na.value = "white") +
+    scale_fill_viridis_d(na.value = "white") +
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
     labs(x = "Excitation (nm)", y = "Emission (nm)")

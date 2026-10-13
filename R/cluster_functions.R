@@ -114,6 +114,7 @@ eemsom_plot_silhouette <- function(x){
     mutate(pos = seq_along(unit))
   ggplot(table, aes(x = pos, y = silhouette, fill = cluster)) +
     geom_col() +
+    scale_fill_viridis_d() +
     geom_hline(yintercept = mean(table$silhouette), linetype = "dashed") +
     theme_minimal() +
     theme(axis.text.x = element_blank()) +

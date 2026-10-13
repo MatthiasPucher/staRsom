@@ -64,3 +64,13 @@ test_that("component planes can be scaled individually", {
   expect_error(eemsom_plot_cplane(som_test, ex = 275, em = 310, scale = "foo"))
   expect_equal(range(eemsom_plot_cplane(pfsom_test, comps = 2, scale = "each")$data$value), c(0, 1))
 })
+
+test_that("discrete scales use viridis", {
+  viridis <- function(n) ggplot2::scale_fill_viridis_d()$palette(n)
+  fills <- function(p) unique(ggplot2::ggplot_build(p)$data[[1]]$fill)
+  expect_setequal(fills(eemsom_plot_map(som_clustered, type = "cluster")), viridis(3))
+  expect_setequal(fills(eemsom_plot_silhouette(som_clustered)), viridis(3))
+  p <- eemsom_plot_map(som_test, type = "samples", colour = rep(c("a", "b", "c"), 5))
+  expect_setequal(unique(ggplot2::ggplot_build(p)$data[[2]]$colour), ggplot2::scale_colour_viridis_d(end = 0.9)$palette(3))
+})
+

@@ -115,6 +115,7 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE,
       scale_fill_manual(values = "white", na.value = "white", guide = "none")
   } else {
     plot <- plot +
+      scale_fill_viridis_d() +
       labs(fill = "cluster")
   }
   if(type == "samples"){
@@ -123,7 +124,8 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE,
       if(length(colour) != nrow(smp)) stop("colour needs one value per sample!")
       smp$colour <- colour
       plot <- plot + geom_point(data = smp, aes(colour = colour)) + labs(colour = NULL)
-      if(is.numeric(colour)) plot <- plot + scale_colour_viridis_c()
+      # without the light yellow end of viridis, points are visible on the white background
+      plot <- plot + if(is.numeric(colour)) scale_colour_viridis_c(end = 0.9) else scale_colour_viridis_d(end = 0.9)
     } else {
       plot <- plot + geom_point(data = smp)
     }

@@ -89,5 +89,6 @@ test_that("stability is plotted", {
   p <- eemsom_plot_stability(st)
   expect_s3_class(p, "ggplot")
   expect_equal(sum(p$data$pairs), nrow(st$neighbourhood))
+  expect_equal(unique(ggplot2::ggplot_build(p)$data[[2]]$colour), ggplot2::scale_colour_viridis_d()$palette(1))
   expect_error(eemsom_plot_stability(som_small), "eemsom_stability")
 })

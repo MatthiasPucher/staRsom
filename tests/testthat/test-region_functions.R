@@ -56,6 +56,8 @@ test_that("regions are plotted", {
   p <- ggeem(reg)
   expect_s3_class(p, "ggplot")
   expect_s3_class(p$data$region, "factor")
+  fills <- unique(ggplot2::ggplot_build(p)$data[[1]]$fill)
+  expect_setequal(setdiff(fills, "white"), ggplot2::scale_fill_viridis_d()$palette(3))
   ps <- eemsom_plot_silhouette(reg)
   expect_s3_class(ps, "ggplot")
   expect_equal(nrow(ps$data), 25)

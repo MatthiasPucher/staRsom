@@ -203,6 +203,7 @@ eemsom_plot_stability <- function(x){
     geom_line(data = random, aes(colour = type)) +
     geom_point(data = random, aes(colour = type)) +
     scale_fill_manual(values = "grey60") +
+    scale_colour_viridis_d() +
     theme_minimal() +
     labs(x = "neighbourhood stability", y = "pairs of samples", colour = NULL, fill = NULL)
 }
