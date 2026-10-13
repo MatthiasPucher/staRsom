@@ -66,6 +66,13 @@ test_that("each sample is assigned to exactly one unit", {
   expect_true(all(is.na(smp$cluster)))
 })
 
+test_that("number of samples and U-matrix of the unit are given for each sample", {
+  smp <- eemsom_samples(som_test)
+  expect_named(smp, c("sample", "unit", "x", "y", "distance", "hits", "umatrix", "cluster"))
+  expect_equal(smp$hits, as.vector(table(smp$unit)[as.character(smp$unit)]))
+  expect_equal(smp$umatrix, eemsom_umatrix(som_test)[smp$unit])
+})
+
 test_that("prototypes are returned as eemlist", {
   codes <- eemsom_codes(som_test)
   expect_s3_class(codes, "eemlist")
@@ -131,4 +138,13 @@ test_that("distances agree between kohonen and staRsom with missing values", {
   expect_equal(eemsom_quality(som_keep)$quantisation_error, mean(smp$distance))
   p <- eemsom_plot_map(som_keep, type = "quality")
   expect_s3_class(p, "ggplot")
+})
+
+test_that("automatic map size does not exceed the number of samples", {
+  set.seed(1)
+  sizes <- sapply(4:60, function(n){
+    mat <- matrix(rnorm(n * 10), nrow = n)
+    prod(eemsom_dim(eemsom_pca(mat), n)) <= n
+  })
+  expect_true(all(sizes))
 })

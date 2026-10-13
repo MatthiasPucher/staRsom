@@ -64,6 +64,8 @@ test_that("new samples are mapped like training samples", {
   expect_equal(pr$unit, smp$unit)
   expect_equal(pr$distance, smp$distance)
   expect_equal(pr$cluster, smp$cluster)
+  expect_equal(pr$hits, smp$hits)
+  expect_equal(pr$umatrix, smp$umatrix)
   el <- eem_list
   el[[1]]$x <- el[[1]]$x * 5
   expect_equal(eemsom_predict(som_clustered, el)$unit[1], smp$unit[1])

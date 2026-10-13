@@ -45,6 +45,7 @@ object of class eemsom_stability, a list containing
   \item quantisation: data frame with columns rep, ss_intra and left_out (only for \code{type = "loo"})
   \item neighbourhood: data frame with columns sample1, sample2 and stability
   \item random: probability of two samples being neighbours on a random map
+  \item loo: only for \code{type = "loo"}, data frame with columns sample and distance (mean distance of each sample to its best matching unit on the maps calculated without it)
   \item nmaps, type, radius: number of maps and settings
 }
 }
@@ -57,6 +58,8 @@ For each map, all samples are mapped to their best matching unit, including samp
 Quantisation: the intra-class sum of squares (SS intra), the sum of the squared distances between samples and their prototypes, is calculated for each map. A low coefficient of variation indicates a stable quantisation.
 
 Neighbourhood: for each pair of samples, the stability is the share of maps in which both samples are neighbours. Stable maps have values close to 0 or 1. On a randomly organised map, two samples are neighbours with probability p (element \code{random}), the stability then follows a binomial distribution.
+
+Outliers: with \code{type = "loo"}, each sample is mapped to the maps calculated without it. Its distance to the best matching unit is high, if no other sample is similar, which corresponds to a large residual of a sample that is not part of a PARAFAC model. The mean distance over \code{nrep} maps is returned in the element \code{loo}. Samples with distinctly higher values than the others are candidates for outliers, which should be checked further, e.g. by \code{\link[staRdom]{eempf_leverage}} and \code{\link[staRdom]{eempf_residuals_plot}} in a PARAFAC analysis.
 
 Run time: \code{nrep} maps (\code{type = "bootstrap"}) or \code{nrep} times the number of samples maps (\code{type = "loo"}) are trained with the settings of \code{som}, so the run time is the corresponding multiple of the training time of \code{\link{eemsom}}. Please see there for ways to reduce the training time and use \code{cores} for parallel calculation.
 }

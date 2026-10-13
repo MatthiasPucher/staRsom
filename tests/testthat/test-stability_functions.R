@@ -42,6 +42,37 @@ test_that("leave-one-out stability is calculated", {
   st <- eemsom_stability(eem_list, som_small, type = "loo", nrep = 1)
   expect_equal(st$nmaps, length(eem_list))
   expect_equal(st$quantisation$left_out, eemR::eem_names(eem_list))
+  expect_named(st$loo, c("sample", "distance"))
+  expect_equal(st$loo$sample, eemR::eem_names(eem_list))
+  expect_true(all(st$loo$distance > 0))
+  expect_output(print(st), "leave-one-out distance")
+  expect_null(eemsom_stability(eem_list, som_small, nrep = 2)$loo)
+})
+
+test_that("leave-one-out distances are the distances to maps without the sample", {
+  st <- eemsom_stability(eem_list, som_small, type = "loo", nrep = 2, seed = 3)
+  # the left-out sample is not part of the map, so its distance is at least as large as in the full map
+  expect_true(mean(st$loo$distance) > mean(eemsom_samples(som_small)$distance))
+  # first sample, first map: recalculate the map without it
+  settings <- som_small$settings
+  mat <- eem2mat(eem_list, normalise = som_small$normalise, na = som_small$na)
+  task <- list(idx = seq_len(nrow(mat))[-1], init = eemsom_pcainit(eemsom_pca(mat[-1, ]), settings$grid, colnames(mat)))
+  seeds <- with_seed(3, sample.int(.Machine$integer.max, st$nmaps))
+  d1 <- sapply(1:2, function(r){
+    task$seed <- seeds[r]
+    codes <- eemsom_stabilityworker(task, mat, settings[setdiff(names(settings), "init")])
+    sqrt(min(eemsom_distmat(mat[1, , drop = FALSE], codes)))
+  })
+  expect_equal(st$loo$distance[1], mean(d1))
+})
+
+test_that("an outlier has the highest leave-one-out distance", {
+  # sample 3 is replaced by a single peak at ex 400 nm, em 600 nm, unlike all other samples
+  el <- eem_list
+  el[[3]]$x <- outer(dnorm(el[[3]]$em, 600, 15), dnorm(el[[3]]$ex, 400, 15))
+  som <- eemsom(el, dim = c(3, 3), rlen = 20)
+  st <- eemsom_stability(el, som, type = "loo", nrep = 1)
+  expect_equal(st$loo$sample[which.max(st$loo$distance)], eemR::eem_names(el)[3])
 })
 
 test_that("wrong input is rejected", {

@@ -123,6 +123,7 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE,
       if(length(colour) != nrow(smp)) stop("colour needs one value per sample!")
       smp$colour <- colour
       plot <- plot + geom_point(data = smp, aes(colour = colour)) + labs(colour = NULL)
+      if(is.numeric(colour)) plot <- plot + scale_colour_viridis_c()
     } else {
       plot <- plot + geom_point(data = smp)
     }

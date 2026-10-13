@@ -16,7 +16,7 @@ eemsom_predict(som, eem_list, cores = 1, ...)
 \item{...}{additional arguments passed on to \code{\link[staRdom]{A_missing}} and \code{\link[staRdom]{eem_parafac}} (maps of PARAFAC loadings only), e.g. \code{maxit}. By default, \code{nstart = 1} is used because the loadings with fixed B and C modes do not depend on the start.}
 }
 \value{
-data frame with columns sample, unit, x, y, distance and cluster like \code{\link{eemsom_samples}}
+data frame with columns sample, unit, x, y, distance, hits, umatrix and cluster like \code{\link{eemsom_samples}}. hits is the number of training samples mapped to the unit. A distance much higher than the distances of the training samples indicates a sample that is not represented by the map.
 }
 \description{
 New EEMs are assigned to their best matching unit. For maps of EEMs (\code{\link{eemsom}}), they are normalised like the training data. For maps of PARAFAC loadings (\code{\link{eempf_som}}), their loadings are calculated first with the fixed emission and excitation loadings of the PARAFAC model (\code{\link[staRdom]{A_missing}}).

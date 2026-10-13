@@ -49,7 +49,7 @@ test_that("clustering, splitting and plots work with maps of PARAFAC loadings", 
 test_that("new samples are mapped to maps of PARAFAC loadings", {
   # the samples of eem_list are part of the PARAFAC model, so their loadings are reproduced
   pr <- eemsom_predict(pfsom_test, eem_prepared)
-  expect_named(pr, c("sample", "unit", "x", "y", "distance", "cluster"))
+  expect_named(pr, c("sample", "unit", "x", "y", "distance", "hits", "umatrix", "cluster"))
   expect_equal(pr$sample, eemR::eem_names(eem_prepared))
   smp <- eemsom_samples(pfsom_test)
   smp <- smp[match(pr$sample, smp$sample), ]

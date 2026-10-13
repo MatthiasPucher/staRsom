@@ -17,6 +17,8 @@
 #'
 #' Neighbourhood: for each pair of samples, the stability is the share of maps in which both samples are neighbours. Stable maps have values close to 0 or 1. On a randomly organised map, two samples are neighbours with probability p (element \code{random}), the stability then follows a binomial distribution.
 #'
+#' Outliers: with \code{type = "loo"}, each sample is mapped to the maps calculated without it. Its distance to the best matching unit is high, if no other sample is similar, which corresponds to a large residual of a sample that is not part of a PARAFAC model. The mean distance over \code{nrep} maps is returned in the element \code{loo}. Samples with distinctly higher values than the others are candidates for outliers, which should be checked further, e.g. by \code{\link[staRdom]{eempf_leverage}} and \code{\link[staRdom]{eempf_residuals_plot}} in a PARAFAC analysis.
+#'
 #' Run time: \code{nrep} maps (\code{type = "bootstrap"}) or \code{nrep} times the number of samples maps (\code{type = "loo"}) are trained with the settings of \code{som}, so the run time is the corresponding multiple of the training time of \code{\link{eemsom}}. Please see there for ways to reduce the training time and use \code{cores} for parallel calculation.
 #'
 #' @return object of class eemsom_stability, a list containing
@@ -24,6 +26,7 @@
 #'   \item quantisation: data frame with columns rep, ss_intra and left_out (only for \code{type = "loo"})
 #'   \item neighbourhood: data frame with columns sample1, sample2 and stability
 #'   \item random: probability of two samples being neighbours on a random map
+#'   \item loo: only for \code{type = "loo"}, data frame with columns sample and distance (mean distance of each sample to its best matching unit on the maps calculated without it)
 #'   \item nmaps, type, radius: number of maps and settings
 #' }
 #' @export
@@ -65,7 +68,7 @@ eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radiu
     } else {
       lapply(seq_len(n * nrep), function(r){
         i <- (r - 1) %/% nrep + 1
-        list(rep = r, left_out = rownames(mat)[i], idx = seq_len(n)[-i])
+        list(rep = r, left_out = rownames(mat)[i], left_idx = i, idx = seq_len(n)[-i])
       })
     }
     # each map gets its own seed, so the result does not depend on cores
@@ -101,11 +104,16 @@ eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radiu
   ss_intra <- numeric(length(codes))
   pairs <- utils::combn(n, 2)
   neigh <- numeric(ncol(pairs))
+  loo_dist <- numeric(length(codes))
   for(t in seq_along(codes)){
     d <- eemsom_distmat(mat, codes[[t]])
     bmu <- apply(d, 1, which.min)
     ss_intra[t] <- sum(d[cbind(seq_len(n), bmu)])
     neigh <- neigh + near[cbind(bmu[pairs[1, ]], bmu[pairs[2, ]])]
+    if(type == "loo"){
+      i <- tasks[[t]]$left_idx
+      loo_dist[t] <- sqrt(d[i, bmu[i]])
+    }
   }
   quantisation <- data.frame(rep = seq_along(codes), ss_intra = ss_intra)
   if(type == "loo") quantisation$left_out <- sapply(tasks, `[[`, "left_out")
@@ -113,6 +121,11 @@ eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radiu
                               stability = neigh / length(codes), stringsAsFactors = FALSE)
   res <- list(quantisation = quantisation, neighbourhood = neighbourhood, random = mean(near),
               nmaps = length(codes), type = type, radius = radius)
+  if(type == "loo"){
+    left_idx <- sapply(tasks, `[[`, "left_idx")
+    res$loo <- data.frame(sample = rownames(mat), distance = as.numeric(tapply(loo_dist, factor(left_idx, levels = seq_len(n)), mean)),
+                          stringsAsFactors = FALSE)
+  }
   class(res) <- "eemsom_stability"
   res
 }
@@ -146,6 +159,11 @@ print.eemsom_stability <- function(x, ...){
   cat(" SS intra: mean ", signif(mean(q), 4), ", median ", signif(median(q), 4), ", CV ", signif(sd(q) / mean(q) * 100, 3), " %\n", sep = "")
   cat(" neighbourhood (radius ", x$radius, "): pairs always or never neighbours: ", signif(mean(st == 0 | st == 1) * 100, 3), " %\n", sep = "")
   cat("   expected on a random map: ", signif(((1 - x$random)^x$nmaps + x$random^x$nmaps) * 100, 3), " %\n", sep = "")
+  if(!is.null(x$loo)){
+    top <- utils::head(x$loo[order(-x$loo$distance), ], 3)
+    cat(" leave-one-out distance: median ", signif(median(x$loo$distance), 3), ", highest: ",
+        paste0(top$sample, " (", signif(top$distance, 3), ")", collapse = ", "), "\n", sep = "")
+  }
   invisible(x)
 }
 

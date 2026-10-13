@@ -127,7 +127,9 @@ print.eemsom <- function(x, ...){
 #'
 #' @details With missing values (\code{na = "keep"}), the distances are calculated from the available wavelength pairs of a sample and scaled up to the number of all wavelength pairs, as in kohonen.
 #'
-#' @return data frame with columns sample, unit (number of the best matching unit), x and y (position of the unit on the map), distance (Euclidean distance between sample and prototype) and cluster (NA if no clustering was done)
+#' @details The columns hits and umatrix help to find unusual samples (outliers): such samples often occupy a unit alone (hits = 1) that is separated from its neighbours by a high U-matrix value. Their distance to the prototype can be small though, because the prototype adapts to them. The leave-one-out distance calculated by \code{\link{eemsom_stability}} with \code{type = "loo"} is a more reliable indicator.
+#'
+#' @return data frame with columns sample, unit (number of the best matching unit), x and y (position of the unit on the map), distance (Euclidean distance between sample and prototype), hits (number of samples mapped to the unit), umatrix (mean distance between the prototype of the unit and the prototypes of its neighbours, see \code{\link{eemsom_plot_map}}) and cluster (NA if no clustering was done)
 #' @export
 #'
 #' @family map results
@@ -153,9 +155,10 @@ eemsom_samples <- function(som){
 #' @noRd
 eemsom_unittable <- function(som, samples, unit, sqdist){
   pts <- som$som$grid$pts
+  hits <- tabulate(som$som$unit.classif, nbins = nrow(pts))
   cluster <- if(is.null(som$clusters)) NA else som$clusters[unit]
-  data.frame(sample = samples, unit = unit, x = pts[unit, 1], y = pts[unit, 2],
-             distance = sqrt(sqdist), cluster = cluster, stringsAsFactors = FALSE)
+  data.frame(sample = samples, unit = unit, x = pts[unit, 1], y = pts[unit, 2], distance = sqrt(sqdist),
+             hits = hits[unit], umatrix = eemsom_umatrix(som)[unit], cluster = cluster, stringsAsFactors = FALSE)
 }
 
 #' Prototype EEMs of a self-organising map
@@ -279,6 +282,8 @@ eemsom_dim <- function(pca, n, topo = "hexagonal"){
   ratio <- if(length(d) > 1 && d[2] > 0 && d[1] <= sqrt(munits) * d[2]) d[1] / d[2] else 1
   xdim <- max(2, round(sqrt(munits / ratio * if(topo == "hexagonal") sqrt(0.75) else 1)))
   ydim <- max(2, round(munits / xdim))
+  # rounding must not lead to more units than samples
+  if(xdim * ydim > n) ydim <- max(2, floor(n / xdim))
   c(xdim, ydim)
 }
 

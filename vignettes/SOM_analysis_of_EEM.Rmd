@@ -113,6 +113,8 @@ eem_list_reduced <- eem_exclude(eem_list, list(ex = eem_list[[1]]$ex[c(FALSE, TR
 
 ## Samples on the map
 
+`eemsom_samples()` gives the unit of each sample, its distance to the prototype, the number of samples on the unit (`hits`) and the U-matrix value of the unit (see below).
+
 ```{r}
 eemsom_samples(som)
 ```
@@ -235,6 +237,54 @@ pred
 
 A high distance compared to the training samples indicates that a sample is not well represented by the map. The distances of the two outliers (`r paste(round(pred$distance, 1), collapse = " and ")`) are much higher than those of the training samples (maximum `r round(max(eemsom_samples(som)$distance), 1)`).
 
+# Outliers
+
+## Keeping outliers in the map
+
+In a PARAFAC analysis, outliers are removed, because a few unusual samples can distort all components of the model [@murphy_fluorescence_2013]. Self-organising maps are less sensitive: each unit has its own prototype and an unusual sample usually occupies a unit of its own without changing the rest of the map. Ejarque-Gonzalez and Butturini [-@ejarque_som_2014] kept their outliers and found them "naturally integrated" in the map; industrial effluents formed clusters of single units and leaving them out did not change the map in a meaningful way. Moreover, unusual samples are often an interesting result of an exploratory analysis. Therefore, outliers are usually kept in a SOM. Only samples with errors (e.g. measurement artefacts or remaining scatter) should be removed before.
+
+## Hints on outliers
+
+Nevertheless, the map gives hints on samples that might be outliers in a subsequent PARAFAC analysis. Here, the two samples excluded by staRdom from the drEEM data are added to the example data:
+
+```{r}
+eem_all <- eem_bind(eem_list, eem_list_outliers)
+som_all <- eemsom(eem_all, seed = 42)
+smp <- eemsom_samples(som_all)
+```
+
+Unusual samples often occupy a unit alone (`hits` = 1) separated from the neighbouring units by a high U-matrix value. Their distance to the prototype can be small though, because the prototype adapts to them. A more reliable indicator is the leave-one-out distance: each sample is mapped to a map calculated without it, which corresponds to the residuals of a sample that is not part of a PARAFAC model. `eemsom_stability()` with `type = "loo"` calculates these maps and returns the distances in the element `loo`.
+
+```{r}
+loo <- eemsom_stability(eem_all, som_all, type = "loo", nrep = 1, cores = cores)
+loo
+```
+
+The table compares these indicators with the leverage of the samples in the PARAFAC model `pf2[[4]]` from staRdom, which contains all drEEM samples including the two outliers.
+
+```{r}
+outliers <- data.frame(smp[, c("sample", "hits", "umatrix", "distance")],
+                       loo = loo$loo$distance,
+                       leverage = unname(eempf_leverage(pf2[[4]])$A[smp$sample]))
+outliers[order(-outliers$loo), ]
+```
+
+```{r, fig.height = 6}
+eemsom_plot_map(som_all, type = "samples", colour = loo$loo$distance, labels = TRUE)
+```
+
+The samples with the highest leave-one-out distances, `r paste(head(outliers$sample[order(-outliers$loo)], 2), collapse = " and ")`, are the two outliers. In the complete drEEM data set (208 samples including the two outliers, default settings), both samples occupied units of their own and had the highest leave-one-out distances (9.9 and 7.3, median of all samples 1.0, next sample 3.6) as well as the highest leverages in the PARAFAC model (0.49 and 0.26, next sample 0.08).
+
+## From the map to PARAFAC
+
+The indicators of the map point to samples with an unusual shape of their EEMs. They do not replace the outlier analysis of the PARAFAC model:
+
+* The leverage describes the influence of a sample on the model, the residuals describe how well the model represents the sample. A map cannot distinguish both cases.
+* Across all samples of the drEEM data, the indicators of the map were only moderately correlated with leverage and residuals (Spearman's correlation 0.37 to 0.54). The extreme samples agreed, but not the order of the others.
+* Samples that differ only in concentration are not detected, because the EEMs are normalised (unless `normalise = "none"`).
+
+Samples with distinctly high leave-one-out distances should therefore be checked with `eempf_leverage_plot()` and `eempf_residuals_plot()` of staRdom before they are excluded. Groups of single outliers created by `eemsom_split()` are too small for a PARAFAC model anyway.
+
 # Self-organising map of PARAFAC loadings
 
 Instead of the EEMs, the loadings of a PARAFAC model can be arranged on a map. Cuss et al. [-@cuss_ph_2014] found a clearer separation of DOM sources with the relative contributions of the components than with the EEMs. `eempf_som()` uses the Fmax values of each component, divided by their sum per sample (`normalise = TRUE`). Here, we use the six-component model of the complete drEEM data set from staRdom.
@@ -276,7 +326,7 @@ eemsom_predict(pfsom, eem_list_outliers)
 * **Position:** Samples close to each other on the map have similar EEMs. The distance on the map is only meaningful between neighbouring units; distant units can be similar if the map is folded.
 * **U-matrix:** High values mark borders between groups of similar units. Groups of units with low values contain similar prototypes.
 * **Counts and empty units:** Empty units lie between groups of samples and interpolate between them. Many samples on one unit indicate a homogeneous group.
-* **Single units with high U-matrix values:** Samples with very distinctive EEMs can form clusters of a single unit, e.g. industrial effluents in Ejarque-Gonzalez and Butturini [-@ejarque_som_2014]. Such outliers are integrated in the map without distorting it, which can be checked with the stability assessment.
+* **Single units with high U-matrix values:** Samples with very distinctive EEMs can form clusters of a single unit, e.g. industrial effluents in Ejarque-Gonzalez and Butturini [-@ejarque_som_2014]. Such outliers are integrated in the map without distorting it, which can be checked with the stability assessment. High leave-one-out distances confirm them as candidates for outliers in a PARAFAC analysis (see section Outliers).
 * **Prototypes:** The prototype EEMs show the typical fluorescence of each part of the map. Differences between clusters can be read from their prototypes.
 * **Component planes:** Similar component planes indicate correlated fluorescence at the wavelength pairs. Gradients of peaks along the map explain the arrangement of the samples. The regions summarise these correlations.
 * **Metadata:** Colouring the samples by metadata shows whether groups on the map correspond to sites, seasons or other factors.

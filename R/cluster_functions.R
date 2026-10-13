@@ -185,7 +185,7 @@ eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
 #'
 #' Maps of PARAFAC loadings: the new EEMs need the same preparation as the EEMs of the PARAFAC model (e.g. scatter removal). Their Fmax loadings are scaled like in \code{\link{eempf_som}} (relative or absolute) and the distances refer to these loadings.
 #'
-#' @return data frame with columns sample, unit, x, y, distance and cluster like \code{\link{eemsom_samples}}
+#' @return data frame with columns sample, unit, x, y, distance, hits, umatrix and cluster like \code{\link{eemsom_samples}}. hits is the number of training samples mapped to the unit. A distance much higher than the distances of the training samples indicates a sample that is not represented by the map.
 #' @export
 #'
 #' @family map results
