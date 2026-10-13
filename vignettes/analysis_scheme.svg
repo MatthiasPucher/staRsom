@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640">
+<defs><marker id="head" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4d4d4d"/></marker></defs>
+<rect width="1120" height="640" fill="#ffffff"/>
+<rect x="290" y="14" width="820" height="466" rx="14" fill="#ffffff" stroke="#b9b9c3" stroke-width="1.5" stroke-dasharray="2 0"/>
+<text x="306" y="468" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#7a7a86">staRsom</text>
+<rect x="30" y="34" width="230" height="108" rx="10" fill="#f2f2f4" stroke="#7a7a86" stroke-width="1.5"/>
+<text x="44" y="60" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">Import and correct</text>
+<text x="248" y="54" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#7a7a86" text-anchor="end" font-style="italic">staRdom</text>
+<text x="44" y="82" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Import raw data</text>
+<text x="44" y="100" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Correct biases</text>
+<text x="44" y="118" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Remove scatter</text>
+<rect x="310" y="34" width="230" height="108" rx="10" fill="#e1e7f4" stroke="#3b528b" stroke-width="1.5"/>
+<text x="324" y="60" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">Prepare the EEMs</text>
+<text x="324" y="82" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Same wavelengths</text>
+<text x="324" y="100" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Interpolate scatter</text>
+<text x="324" y="130" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#555">eem_interp()</text>
+<rect x="590" y="34" width="230" height="108" rx="10" fill="#dbf0ee" stroke="#21908c" stroke-width="1.5"/>
+<text x="604" y="60" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">Calculate the map</text>
+<text x="604" y="82" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Normalise the EEMs</text>
+<text x="604" y="100" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Train the map</text>
+<text x="604" y="130" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#555">eemsom()</text>
+<rect x="870" y="34" width="220" height="108" rx="10" fill="#e3f4e0" stroke="#3a9a4a" stroke-width="1.5"/>
+<text x="884" y="60" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">Check the map</text>
+<text x="884" y="82" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Training and quality</text>
+<text x="884" y="100" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Stability, adjust settings</text>
+<text x="884" y="130" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#555">eemsom_stability()</text>
+<path d="M 260 88 L 304 88" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<path d="M 540 88 L 584 88" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<path d="M 820 72 L 864 72" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<path d="M 870 108 L 826 108" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<path d="M 705 142 L 705 166" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M 400 166 L 1000 166" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M 400 166 L 400 188" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<path d="M 600 166 L 600 188" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<path d="M 800 166 L 800 188" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<path d="M 1000 166 L 1000 188" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<rect x="310" y="194" width="180" height="130" rx="10" fill="#ece3f3" stroke="#440154" stroke-width="1.5"/>
+<text x="324" y="220" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">Explore samples</text>
+<text x="324" y="242" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Samples on the map</text>
+<text x="324" y="260" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Prototype EEMs</text>
+<text x="324" y="278" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Metadata</text>
+<text x="324" y="312" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#555">eemsom_plot_map()</text>
+<rect x="510" y="194" width="180" height="130" rx="10" fill="#e1e7f4" stroke="#3b528b" stroke-width="1.5"/>
+<text x="524" y="220" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">Find groups</text>
+<text x="524" y="242" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Number of clusters</text>
+<text x="524" y="260" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Cluster the units</text>
+<text x="524" y="312" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#555">eemsom_cluster()</text>
+<rect x="710" y="194" width="180" height="130" rx="10" fill="#dbf0ee" stroke="#21908c" stroke-width="1.5"/>
+<text x="724" y="220" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">Find regions</text>
+<text x="724" y="242" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Component planes</text>
+<text x="724" y="260" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Fluorescence regions</text>
+<text x="724" y="278" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Regional integration</text>
+<text x="724" y="312" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#555">eemsom_regions()</text>
+<rect x="910" y="194" width="180" height="130" rx="10" fill="#fbf5d0" stroke="#a8930a" stroke-width="1.5"/>
+<text x="924" y="220" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">Check outliers</text>
+<text x="924" y="242" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Leave-one-out distance</text>
+<text x="924" y="260" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Map new samples</text>
+<text x="924" y="312" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#555">eemsom_predict()</text>
+<rect x="310" y="360" width="180" height="92" rx="10" fill="#e3f4e0" stroke="#3a9a4a" stroke-width="1.5"/>
+<text x="324" y="386" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">Map of loadings</text>
+<text x="324" y="408" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">PARAFAC components</text>
+<text x="324" y="440" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#555">eempf_som()</text>
+<path d="M 400 360 L 400 330" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<rect x="510" y="512" width="380" height="104" rx="10" fill="#f2f2f4" stroke="#7a7a86" stroke-width="1.5"/>
+<text x="524" y="538" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">PARAFAC analysis</text>
+<text x="878" y="532" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#7a7a86" text-anchor="end" font-style="italic">staRdom</text>
+<text x="524" y="560" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Models for groups of samples</text>
+<text x="524" y="578" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Check outliers: leverage, residuals</text>
+<text x="524" y="604" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="12" fill="#555">eemsom_split(), eem_parafac()</text>
+<path d="M 600 324 L 600 506" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<path d="M 1000 324 L 1000 564 L 896 564" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+<path d="M 510 564 L 400 564 L 400 458" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#head)"/>
+<rect x="30" y="512" width="230" height="104" rx="10" fill="#f2f2f4" stroke="#7a7a86" stroke-width="1.5"/>
+<text x="44" y="538" font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="bold" fill="#222">Interpret the results</text>
+<text x="44" y="560" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Groups, regions, outliers</text>
+<text x="44" y="578" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#333">Metadata and processes</text>
+<path d="M 290 300 L 145 300 L 145 506" fill="none" stroke="#4d4d4d" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#head)"/>
+</svg>
