@@ -5,6 +5,7 @@
 * All plots use viridis colour scales, also for discrete values: clusters and sample colours in `eemsom_plot_map()`, regions in `ggeem()`, silhouettes and the random map in `eemsom_plot_stability()`. Numeric sample colours in `eemsom_plot_map(type = "samples")` (e.g. leave-one-out distances) use the continuous viridis scale. Sample points omit the light yellow end of viridis to remain visible on the white background.
 * Automatic map size: rounding could lead to more units than samples (e.g. 18 units for 17 samples), as documented the number of units is now limited to the number of samples.
 * Vignette: new section on outliers. Outliers are usually kept in the map; its indicators are compared with the leverage of a PARAFAC model.
+* Vignette rewritten in the style of the staRdom vignettes: practical advice addressed to the reader, task-oriented sections, an explanation of self-organising maps for ecologists and biogeochemists, a diagram of the analysis steps and notes on parallel processing.
 
 # staRsom 0.1.1
 
