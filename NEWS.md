@@ -1,3 +1,7 @@
+# staRsom 0.1.3
+
+* The vignette shows the staRsom logo, derived from the staRdom logo.
+
 # staRsom 0.1.2
 
 * `eemsom_samples()` and `eemsom_predict()` give the number of samples on the unit (`hits`) and its U-matrix value (`umatrix`) for each sample. Unusual samples often occupy a unit alone that is separated from its neighbours.

@@ -25,6 +25,8 @@ knitr::opts_chunk$set(
 cores <- 2
 ```
 
+![](staRsom384.png){width=180}
+
 # Introduction
 
 staRsom is an add-on to staRdom [@pucher_stardom_2019]. It arranges excitation emission matrices (EEMs) of dissolved organic matter (DOM) on a self-organising map (SOM). You can use it to explore large and heterogeneous data sets, to find groups of samples with similar DOM, to find regions of the EEMs that behave alike and to identify unusual samples [@bieroza_exploratory_2009; @ejarque_som_2014]. staRsom works with the EEMs you have corrected with staRdom, so please do the corrections first (see the staRdom vignettes).
