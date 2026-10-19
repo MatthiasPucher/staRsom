@@ -1,0 +1,49 @@
+url: https://matthiaspucher.github.io/staRsom/
+template:
+  bootstrap: 5
+
+home:
+  links:
+  - text: staRdom (PARAFAC analysis of EEMs)
+    href: https://cran.r-project.org/package=staRdom
+
+reference:
+- title: Self-organising maps
+  desc: Train a map from EEMs and look at its samples, prototypes and quality.
+  contents:
+  - eemsom
+  - eemsom_samples
+  - eemsom_codes
+  - eemsom_quality
+  - eemsom_predict
+- title: Plots
+  contents:
+  - ggeem.eemsom
+  - eemsom_plot_map
+  - eemsom_plot_cplane
+  - eemsom_plot_training
+- title: Clusters and groups of samples
+  contents:
+  - eemsom_kselect
+  - eemsom_cluster
+  - eemsom_plot_silhouette
+  - eemsom_split
+- title: Fluorescence regions
+  contents:
+  - eemsom_regions
+  - ggeem.eemsom_regions
+  - eemsom_fri
+- title: Stability and outliers
+  contents:
+  - eemsom_stability
+  - eemsom_plot_stability
+- title: PARAFAC models
+  contents:
+  - eempf_som
+- title: Data conversion
+  contents:
+  - eem2mat
+  - mat2eem
+- title: Package
+  contents:
+  - staRsom-package

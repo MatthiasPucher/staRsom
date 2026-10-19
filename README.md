@@ -44,7 +44,7 @@ som <- eemsom_cluster(som, k = 3)
 eem_groups <- eemsom_split(eem_list, som, min_samples = 5)
 ```
 
-The vignette shows the complete workflow:
+The documentation with all functions, examples and the vignette is available at <https://matthiaspucher.github.io/staRsom/>. The vignette shows the complete workflow:
 
 ```r
 vignette("SOM_analysis_of_EEM", package = "staRsom")

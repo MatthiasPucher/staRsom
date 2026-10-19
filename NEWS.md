@@ -6,6 +6,7 @@
 * `citation("staRsom")` is generated from DESCRIPTION. For the package from CRAN, it contains the DOI of the package.
 * DESCRIPTION links to the GitHub repository, the README shows the logo, the installation from GitHub and how the package was developed.
 * Shorter examples of `eemsom_split()` and `eemsom_stability()`.
+* Website built with pkgdown: <https://matthiaspucher.github.io/staRsom/>.
 
 # staRsom 0.1.3
 
