@@ -23,8 +23,8 @@ The volume of region i is \eqn{\Phi_i = \sum I(ex, em) \Delta ex \Delta em}{Phi_
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
-regions <- eemsom_regions(som, k = 4, dim = c(8, 8))
+som <- eemsom(eem_list, rlen = 100, seed = 42)
+regions <- eemsom_regions(som, k = 4, dim = c(8, 8), seed = 42)
 eemsom_fri(eem_list, regions)
 }
 \references{

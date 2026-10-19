@@ -31,7 +31,7 @@ Ejarque-Gonzalez and Butturini (2014) used the prototype EEMs to describe the ch
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
+som <- eemsom(eem_list, rlen = 100, seed = 42)
 ggeem(som)
 ggeem(som, units = c(1, 2), contour = TRUE)
 }

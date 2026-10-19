@@ -29,7 +29,7 @@ eemsom_stability(
 
 \item{radius}{two samples are neighbours if their units are not more than \code{radius} units apart}
 
-\item{seed}{seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards. Each map gets its own seed drawn from this stream, so the result does not depend on \code{cores}.}
+\item{seed}{seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards. Each map gets its own seed drawn from this stream, so the result does not depend on \code{cores} (with the default random number generator, see \code{\link{RNGkind}}).}
 
 \item{cores}{number of parallel calculations}
 
@@ -66,15 +66,15 @@ Run time: \code{nrep} maps (\code{type = "bootstrap"}) or \code{nrep} times the 
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, dim = c(3, 3), rlen = 20)
-stab <- eemsom_stability(eem_list, som, nrep = 3)
+som <- eemsom(eem_list, dim = c(3, 3), rlen = 20, seed = 42)
+stab <- eemsom_stability(eem_list, som, nrep = 3, seed = 42)
 stab
 eemsom_plot_stability(stab)
 
 \donttest{
-# with real data sets, use more repetitions
-som <- eemsom(eem_list)
-stab <- eemsom_stability(eem_list, som, nrep = 10, cores = 2)
+# in parallel; with real data sets, use more repetitions
+som <- eemsom(eem_list, rlen = 100, seed = 42)
+stab <- eemsom_stability(eem_list, som, nrep = 4, cores = 2, seed = 42)
 eemsom_plot_stability(stab)
 }
 }

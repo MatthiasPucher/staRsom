@@ -137,7 +137,7 @@ print.eemsom <- function(x, ...){
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' eemsom_samples(som)
 eemsom_samples <- function(som){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
@@ -178,7 +178,7 @@ eemsom_unittable <- function(som, samples, unit, sqdist){
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' codes <- eemsom_codes(som)
 #' codes
 #' ggeem(codes)
@@ -223,7 +223,7 @@ eemsom_codes <- function(som, denormalise = FALSE){
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' eemsom_quality(som)
 eemsom_quality <- function(som){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")

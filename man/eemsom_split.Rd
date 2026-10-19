@@ -27,15 +27,16 @@ Samples are matched by their names. Groups without samples are omitted.
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
+som <- eemsom(eem_list, rlen = 100, seed = 42)
 som <- eemsom_cluster(som, k = 3)
 eem_groups <- eemsom_split(eem_list, som, min_samples = 3)
 lengths(eem_groups)
 
 \donttest{
-# separate PARAFAC models for each group
-# (with real data sets, groups need enough samples and more starts)
-pf_groups <- lapply(eem_groups, eem_parafac, comps = 2, nstart = 2, cores = 1)
+# separate PARAFAC models for the groups with at least 5 samples
+# (with real data sets, groups need more samples, starts and iterations)
+eem_groups <- eem_groups[lengths(eem_groups) >= 5]
+pf_groups <- lapply(eem_groups, eem_parafac, comps = 2, nstart = 1, maxit = 500, cores = 1)
 }
 }
 \seealso{

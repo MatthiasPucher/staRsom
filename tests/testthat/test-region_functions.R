@@ -89,3 +89,12 @@ test_that("cell widths follow the wavelength spacing", {
   expect_equal(eem_cellwidth(c(0, 2, 6)), c(2, 3, 4))
   expect_equal(eem_cellwidth(5), 1)
 })
+
+test_that("without a seed, the drawn seed is stored and reproduces the regions", {
+  set.seed(3)
+  r1 <- eemsom_regions(som_test, k = 2:3, cluster_method = "kmeans", dim = c(5, 5), rlen = 20)
+  expect_true(is.numeric(r1$seed))
+  r2 <- eemsom_regions(som_test, k = 2:3, cluster_method = "kmeans", dim = c(5, 5), rlen = 20, seed = r1$seed)
+  expect_identical(r2$regions, r1$regions)
+  expect_identical(r2$kselect, r1$kselect)
+})

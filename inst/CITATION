@@ -1,11 +1,5 @@
-bibentry(bibtype = "Manual",
-         header = "To cite staRsom in publications use:",
-         title = "{staRsom}: Self-Organising Maps for {EEMs} from {DOM}",
-         author = person("Matthias", "Pucher"),
-         year = "2026",
-         note = sprintf("R package version %s", meta$Version),
-         textVersion = paste0("Pucher, M. (2026). staRsom: Self-Organising Maps for EEMs from DOM. R package version ", meta$Version, ".")
-)
+# the citation of the package is generated from DESCRIPTION; for packages from CRAN, R adds the URL and DOI
+citation(auto = meta)
 
 bibentry(bibtype = "Article",
          header = "Please also cite the method of self-organising maps and correlation analysis of EEMs:",

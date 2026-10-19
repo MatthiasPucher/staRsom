@@ -23,7 +23,7 @@ For maps of PARAFAC loadings (\code{\link{eempf_som}}), the prototype EEM of a u
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
+som <- eemsom(eem_list, rlen = 100, seed = 42)
 codes <- eemsom_codes(som)
 codes
 ggeem(codes)

@@ -18,7 +18,7 @@ The mean distance between samples and their closest unit during the training is 
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
+som <- eemsom(eem_list, rlen = 100, seed = 42)
 eemsom_plot_training(som)
 }
 \seealso{

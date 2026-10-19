@@ -46,7 +46,7 @@ Ejarque-Gonzalez and Butturini (2014) used the U-matrix to find regions of simil
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
+som <- eemsom(eem_list, rlen = 100, seed = 42)
 eemsom_plot_map(som, unit_labels = TRUE)
 eemsom_plot_map(som, type = "umatrix")
 eemsom_plot_map(som, type = "samples", colour = substr(eem_names(eem_list), 1, 2), labels = TRUE)

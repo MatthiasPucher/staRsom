@@ -25,7 +25,7 @@ Quality measures of a self-organising map
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
+som <- eemsom(eem_list, rlen = 100, seed = 42)
 eemsom_quality(som)
 }
 \references{

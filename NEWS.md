@@ -1,3 +1,12 @@
+# staRsom 0.3.0
+
+* Prepared for CRAN.
+* No fixed seed in functions: `seed = NULL` is the default of `eemsom()`, `eempf_som()`, `eemsom_regions()`, `eemsom_stability()`, `eemsom_cluster()` and `eemsom_kselect()`. The random number stream of the session is used, so `set.seed()` before the call gives reproducible results. A number sets the seed for this calculation only, `seed = 42` gives the results of earlier versions.
+* `eemsom_stability()` with `cores = 1` keeps the random number stream of the session; before, the seed of its last map remained set.
+* `citation("staRsom")` is generated from DESCRIPTION. For the package from CRAN, it contains the DOI of the package.
+* DESCRIPTION links to the GitHub repository, the README shows the logo, the installation from GitHub and how the package was developed.
+* Shorter examples of `eemsom_split()` and `eemsom_stability()`.
+
 # staRsom 0.1.3
 
 * The vignette shows the staRsom logo, derived from the staRdom logo.

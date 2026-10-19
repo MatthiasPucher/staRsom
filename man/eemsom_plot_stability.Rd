@@ -18,8 +18,8 @@ A histogram of the neighbourhood stability of all pairs of samples is compared t
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, dim = c(3, 3), rlen = 20)
-stab <- eemsom_stability(eem_list, som, nrep = 3)
+som <- eemsom(eem_list, dim = c(3, 3), rlen = 20, seed = 42)
+stab <- eemsom_stability(eem_list, som, nrep = 3, seed = 42)
 eemsom_plot_stability(stab)
 }
 \references{

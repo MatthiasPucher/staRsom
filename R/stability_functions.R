@@ -7,7 +7,7 @@
 #' @param type \code{"bootstrap"} (default, de Bodt et al. 2002) or \code{"loo"} (leave-one-out, Ejarque-Gonzalez and Butturini 2014)
 #' @param nrep number of maps (\code{type = "bootstrap"}) or number of maps per left-out sample (\code{type = "loo"})
 #' @param radius two samples are neighbours if their units are not more than \code{radius} units apart
-#' @param seed seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards. Each map gets its own seed drawn from this stream, so the result does not depend on \code{cores}.
+#' @param seed seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards. Each map gets its own seed drawn from this stream, so the result does not depend on \code{cores} (with the default random number generator, see \code{\link{RNGkind}}).
 #' @param cores number of parallel calculations
 #' @param verbose print infos, with \code{cores = 1} also the progress
 #'
@@ -43,15 +43,15 @@
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, dim = c(3, 3), rlen = 20)
-#' stab <- eemsom_stability(eem_list, som, nrep = 3)
+#' som <- eemsom(eem_list, dim = c(3, 3), rlen = 20, seed = 42)
+#' stab <- eemsom_stability(eem_list, som, nrep = 3, seed = 42)
 #' stab
 #' eemsom_plot_stability(stab)
 #'
 #' \donttest{
-#' # with real data sets, use more repetitions
-#' som <- eemsom(eem_list)
-#' stab <- eemsom_stability(eem_list, som, nrep = 10, cores = 2)
+#' # in parallel; with real data sets, use more repetitions
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
+#' stab <- eemsom_stability(eem_list, som, nrep = 4, cores = 2, seed = 42)
 #' eemsom_plot_stability(stab)
 #' }
 eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radius = 1, seed = NULL, cores = 1, verbose = FALSE){
@@ -190,8 +190,8 @@ print.eemsom_stability <- function(x, ...){
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, dim = c(3, 3), rlen = 20)
-#' stab <- eemsom_stability(eem_list, som, nrep = 3)
+#' som <- eemsom(eem_list, dim = c(3, 3), rlen = 20, seed = 42)
+#' stab <- eemsom_stability(eem_list, som, nrep = 3, seed = 42)
 #' eemsom_plot_stability(stab)
 eemsom_plot_stability <- function(x){
   if(!inherits(x, "eemsom_stability")) stop("x needs to be of class eemsom_stability!")

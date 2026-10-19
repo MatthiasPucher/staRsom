@@ -22,8 +22,8 @@ The regions found by \code{\link{eemsom_regions}} are shown in the excitation-em
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
-regions <- eemsom_regions(som, dim = c(8, 8))
+som <- eemsom(eem_list, rlen = 100, seed = 42)
+regions <- eemsom_regions(som, dim = c(8, 8), seed = 42)
 ggeem(regions)
 }
 \seealso{

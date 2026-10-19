@@ -25,7 +25,7 @@
 #'   \item kselect: data frame with criteria for the candidates (see \code{\link{eemsom_kselect}}), NULL if k was a single number
 #'   \item rsom: R-mode self-organising map of class kohonen
 #'   \item unit_regions: region of each unit of the R-mode map
-#'   \item method, cluster_method, seed: settings used
+#'   \item method, cluster_method, seed: settings used. Without a given \code{seed}, a seed is drawn from the random number stream of the session and used for the map and the clustering.
 #' }
 #' @export
 #'
@@ -39,13 +39,13 @@
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
-#' regions <- eemsom_regions(som, dim = c(8, 8))
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
+#' regions <- eemsom_regions(som, dim = c(8, 8), seed = 42)
 #' regions
 #' regions$kselect
 #' ggeem(regions)
 #' # fixed number of regions
-#' eemsom_regions(som, k = 3, dim = c(8, 8))
+#' eemsom_regions(som, k = 3, dim = c(8, 8), seed = 42)
 eemsom_regions <- function(som, k = 2:9, method = "planes", dim = "auto", cluster_method = "complete", seed = NULL, ...){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   eempf_som_unsupported(som, "eemsom_regions")
@@ -72,6 +72,8 @@ eemsom_regions <- function(som, k = 2:9, method = "planes", dim = "auto", cluste
   }
   grid <- somgrid(xdim = dim[1], ydim = dim[2], topo = "hexagonal")
   args <- utils::modifyList(list(X = planes, grid = grid, rlen = 100, init = eemsom_pcainit(pca, grid, colnames(planes)), dist.fcts = "sumofsquares"), list(...))
+  # one seed for the map and the clustering, so that kselect belongs to the regions also without a given seed
+  if(is.null(seed)) seed <- sample.int(.Machine$integer.max, 1)
   rsom <- with_seed(seed, do.call(kohonen::som, args))
   rcodes <- rsom$codes[[1]]
   kselect <- NULL
@@ -120,8 +122,8 @@ print.eemsom_regions <- function(x, ...){
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
-#' regions <- eemsom_regions(som, dim = c(8, 8))
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
+#' regions <- eemsom_regions(som, dim = c(8, 8), seed = 42)
 #' ggeem(regions)
 ggeem.eemsom_regions <- function(data, fill_max = FALSE, ...){
   data$regions %>%
@@ -155,8 +157,8 @@ ggeem.eemsom_regions <- function(data, fill_max = FALSE, ...){
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
-#' regions <- eemsom_regions(som, k = 4, dim = c(8, 8))
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
+#' regions <- eemsom_regions(som, k = 4, dim = c(8, 8), seed = 42)
 #' eemsom_fri(eem_list, regions)
 eemsom_fri <- function(eem_list, regions){
   if(!inherits(regions, "eemsom_regions")) stop("regions needs to be of class eemsom_regions!")

@@ -13,7 +13,7 @@ eemsom_kselect(som, k = 2:9, method = "complete", seed = NULL)
 
 \item{method}{clustering method, see \code{\link{eemsom_cluster}}}
 
-\item{seed}{seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.}
+\item{seed}{seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.}
 }
 \value{
 data frame with one row per k
@@ -32,7 +32,7 @@ The units of a self-organising map are clustered with different numbers of clust
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
+som <- eemsom(eem_list, rlen = 100, seed = 42)
 eemsom_kselect(som, k = 2:6)
 }
 \references{

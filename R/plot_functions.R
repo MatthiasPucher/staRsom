@@ -25,7 +25,7 @@
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' ggeem(som)
 #' ggeem(som, units = c(1, 2), contour = TRUE)
 ggeem.eemsom <- function(data, fill_max = FALSE, units = NULL, denormalise = FALSE, ...){
@@ -83,7 +83,7 @@ ggeem.eemsom <- function(data, fill_max = FALSE, units = NULL, denormalise = FAL
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' eemsom_plot_map(som, unit_labels = TRUE)
 #' eemsom_plot_map(som, type = "umatrix")
 #' eemsom_plot_map(som, type = "samples", colour = substr(eem_names(eem_list), 1, 2), labels = TRUE)
@@ -165,13 +165,13 @@ eemsom_plot_map <- function(som, type = "counts", colour = NULL, labels = FALSE,
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' # fluorescence peaks B, T, A and C (Coble 1996)
 #' eemsom_plot_cplane(som, ex = c(275, 275, 260, 350), em = c(310, 340, 450, 450))
 #' eemsom_plot_cplane(som, ex = c(275, 275, 260, 350), em = c(310, 340, 450, 450), scale = "each")
 #'
 #' data(pf_models)
-#' pfsom <- eempf_som(pf4[[1]], rlen = 100)
+#' pfsom <- eempf_som(pf4[[1]], rlen = 100, seed = 42)
 #' eemsom_plot_cplane(pfsom, scale = "each")
 eemsom_plot_cplane <- function(som, ex = NULL, em = NULL, comps = NULL, scale = "common"){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
@@ -233,7 +233,7 @@ eemsom_plot_cplane <- function(som, ex = NULL, em = NULL, comps = NULL, scale = 
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' eemsom_plot_training(som)
 eemsom_plot_training <- function(som){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")

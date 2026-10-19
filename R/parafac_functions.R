@@ -31,7 +31,7 @@
 #' @examples
 #' data(pf_models)
 #'
-#' pfsom <- eempf_som(pf4[[1]], rlen = 100)
+#' pfsom <- eempf_som(pf4[[1]], rlen = 100, seed = 42)
 #' pfsom
 #' eemsom_plot_cplane(pfsom, comps = 1:6)
 #' pfsom <- eemsom_cluster(pfsom, k = 4)

@@ -42,7 +42,7 @@ object of class eemsom_regions, a list containing
   \item kselect: data frame with criteria for the candidates (see \code{\link{eemsom_kselect}}), NULL if k was a single number
   \item rsom: R-mode self-organising map of class kohonen
   \item unit_regions: region of each unit of the R-mode map
-  \item method, cluster_method, seed: settings used
+  \item method, cluster_method, seed: settings used. Without a given \code{seed}, a seed is drawn from the random number stream of the session and used for the map and the clustering.
 }
 }
 \description{
@@ -60,13 +60,13 @@ Wavelength pairs with constant component planes have no correlation and get no r
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
-regions <- eemsom_regions(som, dim = c(8, 8))
+som <- eemsom(eem_list, rlen = 100, seed = 42)
+regions <- eemsom_regions(som, dim = c(8, 8), seed = 42)
 regions
 regions$kselect
 ggeem(regions)
 # fixed number of regions
-eemsom_regions(som, k = 3, dim = c(8, 8))
+eemsom_regions(som, k = 3, dim = c(8, 8), seed = 42)
 }
 \references{
 Barreto-Sanz, M. A., Perez-Uribe, A. (2007). Improving the Correlation Hunting in a Large Quantity of SOM Component Planes. In: Artificial Neural Networks - ICANN 2007, Lecture Notes in Computer Science 4669, 379-388. \doi{10.1007/978-3-540-74695-9_39}

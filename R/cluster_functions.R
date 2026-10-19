@@ -5,7 +5,7 @@
 #' @param som object of class eemsom, see \code{\link{eemsom}}
 #' @param k number of clusters, see \code{\link{eemsom_kselect}} for help choosing k
 #' @param method \code{"complete"} (default, Ejarque-Gonzalez and Butturini 2014) or any other method of \code{\link[stats]{hclust}}, or \code{"kmeans"}
-#' @param seed seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.
+#' @param seed seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.
 #'
 #' @return object of class eemsom with the cluster of each unit in the element \code{clusters}
 #' @export
@@ -22,7 +22,7 @@
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' som <- eemsom_cluster(som, k = 3)
 #' eemsom_samples(som)
 #' eemsom_plot_map(som, type = "cluster")
@@ -39,7 +39,7 @@ eemsom_cluster <- function(som, k, method = "complete", seed = NULL){
 #' @param som object of class eemsom, see \code{\link{eemsom}}
 #' @param k numeric vector of numbers of clusters to be tested
 #' @param method clustering method, see \code{\link{eemsom_cluster}}
-#' @param seed seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.
+#' @param seed seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.
 #'
 #' @details
 #' \itemize{
@@ -65,7 +65,7 @@ eemsom_cluster <- function(som, k, method = "complete", seed = NULL){
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' eemsom_kselect(som, k = 2:6)
 eemsom_kselect <- function(som, k = 2:9, method = "complete", seed = NULL){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
@@ -93,7 +93,7 @@ eemsom_kselect <- function(som, k = 2:9, method = "complete", seed = NULL){
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' som <- eemsom_cluster(som, k = 3)
 #' eemsom_plot_silhouette(som)
 eemsom_plot_silhouette <- function(x){
@@ -142,15 +142,16 @@ eemsom_plot_silhouette <- function(x){
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' som <- eemsom_cluster(som, k = 3)
 #' eem_groups <- eemsom_split(eem_list, som, min_samples = 3)
 #' lengths(eem_groups)
 #'
 #' \donttest{
-#' # separate PARAFAC models for each group
-#' # (with real data sets, groups need enough samples and more starts)
-#' pf_groups <- lapply(eem_groups, eem_parafac, comps = 2, nstart = 2, cores = 1)
+#' # separate PARAFAC models for the groups with at least 5 samples
+#' # (with real data sets, groups need more samples, starts and iterations)
+#' eem_groups <- eem_groups[lengths(eem_groups) >= 5]
+#' pf_groups <- lapply(eem_groups, eem_parafac, comps = 2, nstart = 1, maxit = 500, cores = 1)
 #' }
 eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
@@ -194,7 +195,7 @@ eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
 #' @examples
 #' data(eem_list)
 #'
-#' som <- eemsom(eem_list, rlen = 100)
+#' som <- eemsom(eem_list, rlen = 100, seed = 42)
 #' som <- eemsom_cluster(som, k = 3)
 #' # usually, new samples are mapped. Here, the training samples are used.
 #' eemsom_predict(som, eem_list)
@@ -202,7 +203,7 @@ eemsom_split <- function(eem_list, som, by = "cluster", min_samples = 20){
 #' # map of PARAFAC loadings: the loadings of the new samples are calculated first
 #' data(pf_models)
 #' data(eem_list_outliers)
-#' pfsom <- eempf_som(pf4[[1]], rlen = 100)
+#' pfsom <- eempf_som(pf4[[1]], rlen = 100, seed = 42)
 #' new_samples <- eem_list_outliers |>
 #'   eem_rem_scat(remove_scatter = c(TRUE, TRUE, TRUE, TRUE),
 #'                remove_scatter_width = c(15, 15, 18, 19)) |>

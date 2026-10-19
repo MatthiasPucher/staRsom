@@ -29,7 +29,7 @@ Maps of PARAFAC loadings: the new EEMs need the same preparation as the EEMs of 
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
+som <- eemsom(eem_list, rlen = 100, seed = 42)
 som <- eemsom_cluster(som, k = 3)
 # usually, new samples are mapped. Here, the training samples are used.
 eemsom_predict(som, eem_list)
@@ -37,7 +37,7 @@ eemsom_predict(som, eem_list)
 # map of PARAFAC loadings: the loadings of the new samples are calculated first
 data(pf_models)
 data(eem_list_outliers)
-pfsom <- eempf_som(pf4[[1]], rlen = 100)
+pfsom <- eempf_som(pf4[[1]], rlen = 100, seed = 42)
 new_samples <- eem_list_outliers |>
   eem_rem_scat(remove_scatter = c(TRUE, TRUE, TRUE, TRUE),
                remove_scatter_width = c(15, 15, 18, 19)) |>

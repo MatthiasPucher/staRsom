@@ -13,7 +13,7 @@ eemsom_cluster(som, k, method = "complete", seed = NULL)
 
 \item{method}{\code{"complete"} (default, Ejarque-Gonzalez and Butturini 2014) or any other method of \code{\link[stats]{hclust}}, or \code{"kmeans"}}
 
-\item{seed}{seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.}
+\item{seed}{seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.}
 }
 \value{
 object of class eemsom with the cluster of each unit in the element \code{clusters}
@@ -24,7 +24,7 @@ The prototypes (codebook vectors) of the units are grouped by hierarchical clust
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
+som <- eemsom(eem_list, rlen = 100, seed = 42)
 som <- eemsom_cluster(som, k = 3)
 eemsom_samples(som)
 eemsom_plot_map(som, type = "cluster")

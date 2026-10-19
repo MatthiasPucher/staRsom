@@ -18,7 +18,7 @@ The silhouette width of each unit shows how well it fits into its cluster. Value
 \examples{
 data(eem_list)
 
-som <- eemsom(eem_list, rlen = 100)
+som <- eemsom(eem_list, rlen = 100, seed = 42)
 som <- eemsom_cluster(som, k = 3)
 eemsom_plot_silhouette(som)
 }
