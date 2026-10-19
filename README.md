@@ -1,4 +1,8 @@
-# staRsom
+# staRsom <img src="man/figures/logo.png" align="right" height="139" alt="staRsom logo" />
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/MatthiasPucher/staRsom/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MatthiasPucher/staRsom/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
 
 Self-organising maps (SOM) for fluorescence excitation emission matrices (EEMs) of dissolved organic matter (DOM). staRsom is an add-on to [staRdom](https://cran.r-project.org/package=staRdom) and works with EEMs prepared there (`eemlist`).
 
@@ -15,11 +19,11 @@ Plots: `ggeem()` for prototype EEMs and regions, `eemsom_plot_map()`, `eemsom_pl
 
 ## Installation
 
-staRsom is not on CRAN yet. Install it from the source directory with
+staRsom is not on CRAN yet. Install it from GitHub with
 
 ```r
 # install.packages("remotes")
-remotes::install_local("path/to/staRsom")
+remotes::install_github("MatthiasPucher/staRsom", dependencies = TRUE, build_vignettes = TRUE)
 ```
 
 ## Example
@@ -49,6 +53,10 @@ vignette("SOM_analysis_of_EEM", package = "staRsom")
 ## Citation
 
 Please cite staRsom and the method paper of Ejarque-Gonzalez and Butturini (2014), see `citation("staRsom")`.
+
+## Development
+
+staRsom was developed by Matthias Pucher at ecosight with the help of a large language model (Claude, Anthropic). The model drafted a first version of the package and helped with a literature review. Methods, interfaces and defaults were decided by the maintainer, who is responsible for the package. Everything was either written or reviewed by Matthias Pucher.
 
 ## References
 
