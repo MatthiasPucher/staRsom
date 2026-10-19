@@ -11,7 +11,7 @@ eemsom_regions(
   method = "planes",
   dim = "auto",
   cluster_method = "complete",
-  seed = 42,
+  seed = NULL,
   ...
 )
 
@@ -28,7 +28,7 @@ eemsom_regions(
 
 \item{cluster_method}{clustering method of the R-mode units, see \code{\link{eemsom_cluster}}}
 
-\item{seed}{seed for the random number generator to get reproducible results}
+\item{seed}{seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.}
 
 \item{...}{additional parameters that are passed on to \code{\link[kohonen]{som}}. The default number of iterations is \code{rlen = 100}.}
 

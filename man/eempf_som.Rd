@@ -5,7 +5,7 @@
 \alias{print.eempf_som}
 \title{Calculate a self-organising map from the loadings of a PARAFAC model}
 \usage{
-eempf_som(pfmodel, dim = "auto", normalise = TRUE, seed = 42, ...)
+eempf_som(pfmodel, dim = "auto", normalise = TRUE, seed = NULL, ...)
 
 \method{print}{eempf_som}(x, ...)
 }
@@ -16,7 +16,7 @@ eempf_som(pfmodel, dim = "auto", normalise = TRUE, seed = 42, ...)
 
 \item{normalise}{logical, if TRUE (default), the Fmax values of each sample are divided by their sum, so the map shows the relative composition of the samples (Cuss et al. 2014, Wheeler et al. 2017). If FALSE, the Fmax values are used directly (Zhang et al. 2015).}
 
-\item{seed}{seed for the random number generator to get reproducible results}
+\item{seed}{seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.}
 
 \item{...}{additional parameters passed on to \code{\link{eemsom}} (\code{topo}, \code{rlen}, \code{alpha}, \code{mode}, \code{init}, \code{cores}, \code{verbose}) and to \code{\link[kohonen]{som}}}
 

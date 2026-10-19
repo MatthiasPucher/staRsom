@@ -4,7 +4,7 @@
 \alias{eemsom_cluster}
 \title{Cluster the units of a self-organising map}
 \usage{
-eemsom_cluster(som, k, method = "complete", seed = 42)
+eemsom_cluster(som, k, method = "complete", seed = NULL)
 }
 \arguments{
 \item{som}{object of class eemsom, see \code{\link{eemsom}}}
@@ -13,7 +13,7 @@ eemsom_cluster(som, k, method = "complete", seed = 42)
 
 \item{method}{\code{"complete"} (default, Ejarque-Gonzalez and Butturini 2014) or any other method of \code{\link[stats]{hclust}}, or \code{"kmeans"}}
 
-\item{seed}{seed for the random number generator, only used for \code{method = "kmeans"}}
+\item{seed}{seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.}
 }
 \value{
 object of class eemsom with the cluster of each unit in the element \code{clusters}

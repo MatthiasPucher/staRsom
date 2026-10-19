@@ -15,7 +15,7 @@ eemsom(
   alpha = c(0.05, 0.01),
   mode = "online",
   init = "pca",
-  seed = 42,
+  seed = NULL,
   cores = 1,
   verbose = FALSE,
   ...
@@ -42,7 +42,7 @@ eemsom(
 
 \item{init}{initialisation of the codebook vectors: \code{"pca"} (default) places them on the plane of the first two principal components, \code{"random"} uses randomly selected samples}
 
-\item{seed}{seed for the random number generator to get reproducible results. NULL does not set a seed. The random number generator state of the session is restored afterwards.}
+\item{seed}{seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.}
 
 \item{cores}{number of cores used with \code{mode = "pbatch"}}
 
@@ -75,7 +75,7 @@ The default learning rate (0.05 to 0.01) and the default neighbourhood radius (d
 
 The squared Euclidean distance (\code{dist.fcts = "sumofsquares"}) is always used. Otherwise, kohonen would switch to the Tanimoto distance for data between 0 and 1 with row sums of 1, which occurs with \code{normalise = "sum"}. With \code{na = "keep"}, distances are calculated from the available wavelength pairs of a sample and scaled up to the number of all wavelength pairs.
 
-The initialisation with \code{init = "pca"} is deterministic. The order of samples in the online training is random, so \code{seed} is needed for reproducible results.
+The initialisation with \code{init = "pca"} is deterministic. The order of samples in the online training is random, so please set \code{seed} or use \code{\link{set.seed}} before the call for reproducible results.
 
 The training time grows with the numbers of samples, units and wavelength pairs. As a rough guide for one core, online training with \code{rlen = 500} takes about a minute for 200 EEMs with 3000 wavelength pairs and several minutes for 1000 EEMs. \code{mode = "pbatch"} with \code{cores > 1}, a smaller \code{rlen} or a lower resolution of the EEMs (see \code{\link[staRdom]{eem_range}} and \code{\link[staRdom]{eem_exclude}}; Ejarque-Gonzalez and Butturini (2014) used 366 wavelength pairs) reduce the time. This matters for \code{\link{eemsom_stability}}, which repeats the training many times.
 }

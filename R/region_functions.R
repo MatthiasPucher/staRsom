@@ -7,7 +7,7 @@
 #' @param method \code{"planes"} (default) or \code{"cormat"}, see details
 #' @param dim size of the R-mode map, either \code{"auto"} (default) or a numeric vector \code{c(xdim, ydim)}, see \code{\link{eemsom}}
 #' @param cluster_method clustering method of the R-mode units, see \code{\link{eemsom_cluster}}
-#' @param seed seed for the random number generator to get reproducible results
+#' @param seed seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.
 #' @param ... additional parameters that are passed on to \code{\link[kohonen]{som}}. The default number of iterations is \code{rlen = 100}.
 #'
 #' @details Following Barreto-Sanz and Perez-Uribe (2007), Ejarque-Gonzalez and Butturini (2014) calculated a self-organising map from the matrix of Pearson's correlations between all component planes (\code{method = "cormat"}). This matrix has as many rows and columns as wavelength pairs and the calculation gets slow with a high resolution of the EEMs (minutes with a few thousand wavelength pairs).
@@ -46,7 +46,7 @@
 #' ggeem(regions)
 #' # fixed number of regions
 #' eemsom_regions(som, k = 3, dim = c(8, 8))
-eemsom_regions <- function(som, k = 2:9, method = "planes", dim = "auto", cluster_method = "complete", seed = 42, ...){
+eemsom_regions <- function(som, k = 2:9, method = "planes", dim = "auto", cluster_method = "complete", seed = NULL, ...){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   eempf_som_unsupported(som, "eemsom_regions")
   method <- match.arg(method, c("planes", "cormat"))

@@ -8,13 +8,13 @@ test_that("eempf_som calculates a map of PARAFAC loadings", {
 })
 
 test_that("relative loadings are not treated as class memberships by kohonen", {
-  pfsom <- eempf_som(pf4[[1]], rlen = 100)
+  pfsom <- eempf_som(pf4[[1]], rlen = 100, seed = 42)
   expect_equal(pfsom$som$dist.fcts, "sumofsquares")
   expect_gt(eemsom_quality(pfsom)$explained_variance, 0.9)
 })
 
 test_that("absolute Fmax values can be used", {
-  pfsom <- eempf_som(pf4[[1]], normalise = FALSE, rlen = 20)
+  pfsom <- eempf_som(pf4[[1]], normalise = FALSE, rlen = 20, seed = 42)
   pf <- norm2A(eempf_rescaleBC(pf4[[1]]))
   expect_equal(pfsom$som$data[[1]], pf$A, ignore_attr = TRUE)
   expect_output(print(pfsom), "Fmax")
@@ -34,7 +34,7 @@ test_that("prototype EEMs are reconstructed from PARAFAC components", {
 })
 
 test_that("clustering, splitting and plots work with maps of PARAFAC loadings", {
-  pfsom <- eemsom_cluster(pfsom_test, k = 3)
+  pfsom <- eemsom_cluster(pfsom_test, k = 3, seed = 42)
   expect_equal(nrow(eemsom_samples(pfsom)), nrow(pf4[[1]]$A))
   groups <- eemsom_split(eem_list, pfsom, min_samples = 1)
   expect_equal(sum(lengths(groups)), length(eem_list))
@@ -59,7 +59,7 @@ test_that("new samples are mapped to maps of PARAFAC loadings", {
   expect_silent(pr2 <- eemsom_predict(pfsom_test, eem_prepared, cores = 1, maxit = 100))
   expect_equal(pr2$unit, pr$unit)
   # absolute loadings
-  pfsom_abs <- eempf_som(pf4[[1]], normalise = FALSE, rlen = 20)
+  pfsom_abs <- eempf_som(pf4[[1]], normalise = FALSE, rlen = 20, seed = 42)
   pr_abs <- eemsom_predict(pfsom_abs, eem_prepared)
   smp_abs <- eemsom_samples(pfsom_abs)
   expect_lt(max(abs(pr_abs$distance - smp_abs$distance[match(pr_abs$sample, smp_abs$sample)])), 0.01)
@@ -71,9 +71,9 @@ test_that("new samples are mapped to maps of PARAFAC loadings", {
 })
 
 test_that("unsupported functions give an error", {
-  expect_error(eemsom_regions(pfsom_test), "not available")
-  expect_error(eemsom_stability(eem_list, pfsom_test), "not available")
-  expect_error(eempf_som(eem_list), "parafac")
+  expect_error(eemsom_regions(pfsom_test, seed = 42), "not available")
+  expect_error(eemsom_stability(eem_list, pfsom_test, seed = 42), "not available")
+  expect_error(eempf_som(eem_list, seed = 42), "parafac")
 })
 
 test_that("component planes of EEM maps reject comps", {
@@ -83,6 +83,6 @@ test_that("component planes of EEM maps reject comps", {
 test_that("the Euclidean distance is used for sum-normalised EEMs", {
   el <- eem_list
   for(n in seq_along(el)) el[[n]]$x <- pmax(el[[n]]$x, 0)
-  som <- eemsom(el, normalise = "sum", rlen = 20)
+  som <- eemsom(el, normalise = "sum", rlen = 20, seed = 42)
   expect_equal(som$som$dist.fcts, "sumofsquares")
 })

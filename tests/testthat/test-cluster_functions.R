@@ -5,19 +5,19 @@ test_that("units are clustered", {
   expect_equal(eemsom_samples(som_clustered)$cluster, som_clustered$clusters[som_test$som$unit.classif])
   expect_output(print(som_clustered), "clusters: 3")
   expect_equal(eemsom_cluster(som_test, k = 3, method = "kmeans", seed = 1)$clusters, eemsom_cluster(som_test, k = 3, method = "kmeans", seed = 1)$clusters)
-  expect_setequal(unique(eemsom_cluster(som_test, k = 2, method = "ward.D2")$clusters), 1:2)
-  expect_error(eemsom_cluster(som_test, k = 100), "k needs")
-  expect_error(eemsom_cluster(som_test, k = 2, method = "foo"))
+  expect_setequal(unique(eemsom_cluster(som_test, k = 2, method = "ward.D2", seed = 42)$clusters), 1:2)
+  expect_error(eemsom_cluster(som_test, k = 100, seed = 42), "k needs")
+  expect_error(eemsom_cluster(som_test, k = 2, method = "foo", seed = 42))
 })
 
 test_that("criteria for the number of clusters are calculated", {
-  ks <- eemsom_kselect(som_test, k = 2:5)
+  ks <- eemsom_kselect(som_test, k = 2:5, seed = 42)
   expect_named(ks, c("k", "silhouette", "negative", "davies_bouldin", "wss"))
   expect_equal(ks$k, 2:5)
   expect_true(all(ks$silhouette >= -1 & ks$silhouette <= 1))
   expect_true(all(diff(ks$wss) <= 0))
-  expect_equal(eemsom_kselect(som_test, k = c(1, 3, 100))$k, 3)
-  expect_error(eemsom_kselect(som_test, k = 100), "k needs")
+  expect_equal(eemsom_kselect(som_test, k = c(1, 3, 100), seed = 42)$k, 3)
+  expect_error(eemsom_kselect(som_test, k = 100, seed = 42), "k needs")
 })
 
 test_that("Davies-Bouldin index is correct for a simple case", {
@@ -77,4 +77,12 @@ test_that("new samples are mapped like training samples", {
   pr3 <- eemsom_predict(som_clustered, el3)
   expect_equal(pr3$unit[-1], smp$unit[-1])
   expect_false(is.na(pr3$distance[1]))
+})
+
+test_that("k-means without a seed follows set.seed", {
+  set.seed(2)
+  c1 <- eemsom_cluster(som_test, k = 3, method = "kmeans")$clusters
+  set.seed(2)
+  c2 <- eemsom_cluster(som_test, k = 3, method = "kmeans")$clusters
+  expect_equal(c1, c2)
 })

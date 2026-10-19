@@ -6,7 +6,7 @@ test_that("eemsom returns a map of class eemsom", {
   expect_output(print(som_test), "Self-organising map of 15 EEMs")
   expect_named(som_test$settings, c("grid", "rlen", "alpha", "mode", "cores", "dist.fcts", "init"))
   # the data are always kept, they are needed by the other functions
-  expect_false(is.null(eemsom(eem_list, rlen = 10, keep.data = FALSE)$som$data))
+  expect_false(is.null(eemsom(eem_list, rlen = 10, keep.data = FALSE, seed = 42)$som$data))
 })
 
 test_that("results are reproducible with a seed", {
@@ -28,13 +28,31 @@ test_that("the random number generator state is restored", {
   expect_equal(runif(1), r1)
 })
 
+test_that("without a seed, the random number stream of the session is used", {
+  set.seed(5)
+  s1 <- eemsom(eem_list, rlen = 20, init = "random")
+  r1 <- runif(1)
+  set.seed(5)
+  s2 <- eemsom(eem_list, rlen = 20, init = "random")
+  r2 <- runif(1)
+  expect_identical(s1$som$codes, s2$som$codes)
+  expect_equal(r1, r2)
+  # the stream advances like with any other function using random numbers
+  set.seed(5)
+  expect_false(isTRUE(all.equal(runif(1), r1)))
+})
+
+test_that("seed = NULL is the default of all functions using random numbers", {
+  for(f in list(eemsom, eempf_som, eemsom_regions, eemsom_stability, eemsom_cluster, eemsom_kselect)) expect_null(formals(f)$seed)
+})
+
 test_that("map size can be set", {
-  som <- eemsom(eem_list, dim = c(3, 2), topo = "rectangular", rlen = 20)
+  som <- eemsom(eem_list, dim = c(3, 2), topo = "rectangular", rlen = 20, seed = 42)
   expect_equal(c(som$som$grid$xdim, som$som$grid$ydim), c(3, 2))
   expect_equal(som$som$grid$topo, "rectangular")
-  expect_warning(eemsom(eem_list, dim = c(5, 5), rlen = 20), "more units")
-  expect_error(eemsom(eem_list, dim = 4), "dim")
-  expect_error(eemsom(eem_list, dim = c("a", "b")), "dim")
+  expect_warning(eemsom(eem_list, dim = c(5, 5), rlen = 20, seed = 42), "more units")
+  expect_error(eemsom(eem_list, dim = 4, seed = 42), "dim")
+  expect_error(eemsom(eem_list, dim = c("a", "b"), seed = 42), "dim")
 })
 
 test_that("automatic map size follows the SOM Toolbox", {
@@ -49,12 +67,12 @@ test_that("automatic map size follows the SOM Toolbox", {
   expect_lte(prod(eemsom_dim(list(d = c(2, 1)), 15)), 16)
   expect_equal(c(som_test$som$grid$xdim, som_test$som$grid$ydim), c(3, 5))
   el3 <- structure(eem_list[1:3], class = "eemlist")
-  expect_warning(eemsom(el3, rlen = 10), "more units")
+  expect_warning(eemsom(el3, rlen = 10, seed = 42), "more units")
 })
 
 test_that("other training modes work", {
-  expect_s3_class(eemsom(eem_list, mode = "batch", rlen = 20), "eemsom")
-  expect_s3_class(eemsom(eem_list, mode = "pbatch", rlen = 20, cores = 1), "eemsom")
+  expect_s3_class(eemsom(eem_list, mode = "batch", rlen = 20, seed = 42), "eemsom")
+  expect_s3_class(eemsom(eem_list, mode = "pbatch", rlen = 20, cores = 1, seed = 42), "eemsom")
 })
 
 test_that("each sample is assigned to exactly one unit", {
@@ -93,7 +111,7 @@ test_that("quality measures are calculated", {
 })
 
 test_that("topographic error counts diagonal neighbours on rectangular maps", {
-  som <- eemsom(eem_list, dim = c(3, 3), topo = "rectangular", rlen = 20)
+  som <- eemsom(eem_list, dim = c(3, 3), topo = "rectangular", rlen = 20, seed = 42)
   d <- eemsom_distmat(som$som$data[[1]], som$som$codes[[1]])
   bmu2 <- t(apply(d, 1, function(r) order(r)[1:2]))
   pts <- som$som$grid$pts
@@ -127,7 +145,7 @@ test_that("missing values are handled", {
   codes <- eemsom_codes(som_keep)
   expect_true(all(is.na(codes[[1]]$x[all_missing])))
   expect_false(anyNA(codes[[1]]$x[!all_missing]))
-  expect_equal(eemsom(eem_partial, na = "k", rlen = 10)$keep, som_keep$keep)
+  expect_equal(eemsom(eem_partial, na = "k", rlen = 10, seed = 42)$keep, som_keep$keep)
 })
 
 test_that("distances agree between kohonen and staRsom with missing values", {

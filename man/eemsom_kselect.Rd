@@ -4,7 +4,7 @@
 \alias{eemsom_kselect}
 \title{Help choosing the number of clusters}
 \usage{
-eemsom_kselect(som, k = 2:9, method = "complete", seed = 42)
+eemsom_kselect(som, k = 2:9, method = "complete", seed = NULL)
 }
 \arguments{
 \item{som}{object of class eemsom, see \code{\link{eemsom}}}
@@ -13,7 +13,7 @@ eemsom_kselect(som, k = 2:9, method = "complete", seed = 42)
 
 \item{method}{clustering method, see \code{\link{eemsom_cluster}}}
 
-\item{seed}{seed for the random number generator, only used for \code{method = "kmeans"}}
+\item{seed}{seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.}
 }
 \value{
 data frame with one row per k

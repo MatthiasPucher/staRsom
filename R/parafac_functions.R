@@ -5,7 +5,7 @@
 #' @param pfmodel object of class parafac, see \code{\link[staRdom]{eem_parafac}}
 #' @param dim size of the map, either \code{"auto"} (default) or a numeric vector \code{c(xdim, ydim)}, see \code{\link{eemsom}}
 #' @param normalise logical, if TRUE (default), the Fmax values of each sample are divided by their sum, so the map shows the relative composition of the samples (Cuss et al. 2014, Wheeler et al. 2017). If FALSE, the Fmax values are used directly (Zhang et al. 2015).
-#' @param seed seed for the random number generator to get reproducible results
+#' @param seed seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.
 #' @param ... additional parameters passed on to \code{\link{eemsom}} (\code{topo}, \code{rlen}, \code{alpha}, \code{mode}, \code{init}, \code{cores}, \code{verbose}) and to \code{\link[kohonen]{som}}
 #'
 #' @details The result can be used with the functions for self-organising maps of EEMs, e.g. \code{\link{eemsom_samples}}, \code{\link{eemsom_cluster}}, \code{\link{eemsom_split}} and the plot functions. The prototype EEM of a unit (\code{\link{eemsom_codes}}, \code{\link[staRdom]{ggeem}}) is the sum of the PARAFAC components weighted by the prototype loadings. \code{\link{eemsom_plot_cplane}} shows component planes of the PARAFAC components with the argument \code{comps}. \code{\link{eemsom_predict}} maps new samples after calculating their loadings with the fixed emission and excitation loadings of the PARAFAC model.
@@ -37,7 +37,7 @@
 #' pfsom <- eemsom_cluster(pfsom, k = 4)
 #' eemsom_plot_map(pfsom, type = "cluster")
 #' ggeem(pfsom, units = 1:4)
-eempf_som <- function(pfmodel, dim = "auto", normalise = TRUE, seed = 42, ...){
+eempf_som <- function(pfmodel, dim = "auto", normalise = TRUE, seed = NULL, ...){
   if(!inherits(pfmodel, "parafac")) stop("pfmodel must be an object of class parafac!")
   # B and C scaled to Fmax, the normalisation of the EEMs is kept in the model for A_missing()
   pf <- eempf_rescaleBC(pfmodel)

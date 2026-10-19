@@ -11,7 +11,7 @@ eemsom_stability(
   type = "bootstrap",
   nrep = 20,
   radius = 1,
-  seed = 42,
+  seed = NULL,
   cores = 1,
   verbose = FALSE
 )
@@ -29,7 +29,7 @@ eemsom_stability(
 
 \item{radius}{two samples are neighbours if their units are not more than \code{radius} units apart}
 
-\item{seed}{seed for the random number generator to get reproducible results}
+\item{seed}{seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards. Each map gets its own seed drawn from this stream, so the result does not depend on \code{cores}.}
 
 \item{cores}{number of parallel calculations}
 

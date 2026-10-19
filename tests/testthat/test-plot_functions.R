@@ -27,13 +27,13 @@ test_that("map plots are created for all types", {
 })
 
 test_that("rectangular maps are plotted", {
-  som <- eemsom(eem_list, dim = c(3, 3), topo = "rectangular", rlen = 20)
+  som <- eemsom(eem_list, dim = c(3, 3), topo = "rectangular", rlen = 20, seed = 42)
   p <- eemsom_plot_map(som, type = "umatrix")
   expect_equal(nrow(p$data), 9 * 4)
 })
 
 test_that("u-matrix contains mean distances to neighbours", {
-  som <- eemsom(eem_list, dim = c(2, 2), topo = "rectangular", rlen = 20)
+  som <- eemsom(eem_list, dim = c(2, 2), topo = "rectangular", rlen = 20, seed = 42)
   um <- eemsom_umatrix(som)
   codes <- som$som$codes[[1]]
   expect_length(um, 4)

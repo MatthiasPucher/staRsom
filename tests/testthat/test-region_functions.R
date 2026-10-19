@@ -1,5 +1,5 @@
 test_that("regions are found for all wavelength pairs", {
-  reg <- eemsom_regions(som_test, dim = c(6, 6), rlen = 20)
+  reg <- eemsom_regions(som_test, dim = c(6, 6), rlen = 20, seed = 42)
   expect_s3_class(reg, "eemsom_regions")
   expect_equal(nrow(reg$regions), length(som_test$keep))
   expect_named(reg$regions, c("ex", "em", "region"))
@@ -16,43 +16,43 @@ test_that("number of regions can be set and results are reproducible", {
   expect_equal(r1$k, 3)
   expect_null(r1$kselect)
   expect_identical(r1$regions, r2$regions)
-  expect_error(eemsom_regions(som_test, dim = 5), "dim")
-  expect_error(eemsom_regions(som_test, k = 50, dim = c(3, 3), rlen = 5), "R-mode")
-  expect_error(eemsom_regions(som_test, k = "a", dim = c(3, 3), rlen = 5), "candidates")
+  expect_error(eemsom_regions(som_test, dim = 5, seed = 42), "dim")
+  expect_error(eemsom_regions(som_test, k = 50, dim = c(3, 3), rlen = 5, seed = 42), "R-mode")
+  expect_error(eemsom_regions(som_test, k = "a", dim = c(3, 3), rlen = 5, seed = 42), "candidates")
 })
 
 test_that("candidates for the number of regions can be given", {
-  r <- eemsom_regions(som_test, k = 2:4, dim = c(5, 5), rlen = 20)
+  r <- eemsom_regions(som_test, k = 2:4, dim = c(5, 5), rlen = 20, seed = 42)
   expect_equal(r$kselect$k, 2:4)
   expect_true(r$k %in% 2:4)
   expect_equal(r$k, r$kselect$k[which.max(r$kselect$silhouette)])
-  r_null <- eemsom_regions(som_test, k = NULL, dim = c(5, 5), rlen = 20)
-  r_default <- eemsom_regions(som_test, dim = c(5, 5), rlen = 20)
+  r_null <- eemsom_regions(som_test, k = NULL, dim = c(5, 5), rlen = 20, seed = 42)
+  r_default <- eemsom_regions(som_test, dim = c(5, 5), rlen = 20, seed = 42)
   expect_equal(r_null$kselect, r_default$kselect)
   expect_equal(r_default$kselect$k, 2:9)
 })
 
 test_that("regions of planes and correlation matrix are similar", {
   el <- eem_exclude(eem_list, list(ex = eem_list[[1]]$ex[c(FALSE, TRUE)], em = eem_list[[1]]$em[c(FALSE, TRUE, TRUE)]))
-  som <- eemsom(el, rlen = 50)
-  rp <- eemsom_regions(som, k = 2, method = "planes", dim = c(5, 5), rlen = 20)
-  rc <- eemsom_regions(som, k = 2, method = "cormat", dim = c(5, 5), rlen = 20)
+  som <- eemsom(el, rlen = 50, seed = 42)
+  rp <- eemsom_regions(som, k = 2, method = "planes", dim = c(5, 5), rlen = 20, seed = 42)
+  rc <- eemsom_regions(som, k = 2, method = "cormat", dim = c(5, 5), rlen = 20, seed = 42)
   tab <- table(rp$regions$region, rc$regions$region)
   # most wavelength pairs are in corresponding regions
   expect_gt(max(sum(diag(tab)), sum(tab) - sum(diag(tab))) / sum(tab), 0.7)
 })
 
 test_that("removed wavelength pairs get no region", {
-  reg <- eemsom_regions(som_scatter, k = 2, dim = c(5, 5), rlen = 20)
+  reg <- eemsom_regions(som_scatter, k = 2, dim = c(5, 5), rlen = 20, seed = 42)
   expect_true(all(is.na(reg$regions$region[!som_scatter$keep])))
   # with na = "keep", pairs missing in all samples get no region either
-  reg_keep <- eemsom_regions(som_keep, k = 2, dim = c(5, 5), rlen = 20)
+  reg_keep <- eemsom_regions(som_keep, k = 2, dim = c(5, 5), rlen = 20, seed = 42)
   expect_true(all(is.na(reg_keep$regions$region[!som_keep$keep])))
   expect_setequal(unique(stats::na.omit(reg_keep$regions$region)), 1:2)
 })
 
 test_that("regions are plotted", {
-  reg <- eemsom_regions(som_test, k = 3, dim = c(5, 5), rlen = 20)
+  reg <- eemsom_regions(som_test, k = 3, dim = c(5, 5), rlen = 20, seed = 42)
   p <- ggeem(reg)
   expect_s3_class(p, "ggplot")
   expect_s3_class(p$data$region, "factor")
@@ -64,7 +64,7 @@ test_that("regions are plotted", {
 })
 
 test_that("fluorescence regional integration is area normalised", {
-  reg <- eemsom_regions(som_test, k = 3, dim = c(5, 5), rlen = 20)
+  reg <- eemsom_regions(som_test, k = 3, dim = c(5, 5), rlen = 20, seed = 42)
   fri <- eemsom_fri(eem_list, reg)
   expect_equal(fri$sample, eemR::eem_names(eem_list))
   expect_equal(names(fri), c("sample", paste0("region_", 1:3)))

@@ -123,7 +123,7 @@ ggeem(eem_list)
 
 ## Train the map
 
-`eemsom()` normalises the EEMs and trains the map. By default, each EEM is divided by its standard deviation, like `eem_parafac(normalise = TRUE)` does, so the map shows differences in the composition of DOM. You can use `normalise = "max"` to divide by the maximum as Ejarque-Gonzalez and Butturini [-@ejarque_som_2014] did, or `normalise = "none"` if differences in concentration are of interest. The size of the map is chosen automatically from the number of samples [@vesanto_clustering_2000], but you can set it with `dim`. Please always set a `seed` to get the same map again.
+`eemsom()` normalises the EEMs and trains the map. By default, each EEM is divided by its standard deviation, like `eem_parafac(normalise = TRUE)` does, so the map shows differences in the composition of DOM. You can use `normalise = "max"` to divide by the maximum as Ejarque-Gonzalez and Butturini [-@ejarque_som_2014] did, or `normalise = "none"` if differences in concentration are of interest. The size of the map is chosen automatically from the number of samples [@vesanto_clustering_2000], but you can set it with `dim`. Please always set a `seed` to get the same map again. Without `seed`, the functions use the random numbers of your R session like other R functions do, so `set.seed()` before the call works as well.
 
 ```{r}
 # train the map, the seed makes the result reproducible
@@ -255,7 +255,7 @@ Wavelength pairs whose component planes are correlated change in the same way ac
 * `eemsom_fri()` integrates the fluorescence of each sample within the regions.
 
 ```{r}
-regions <- eemsom_regions(som)
+regions <- eemsom_regions(som, seed = 42)
 regions
 # criteria for the numbers of regions
 regions$kselect
@@ -275,7 +275,7 @@ Before you interpret the map, please check whether it is stable. `eemsom_stabili
 
 ```{r}
 # 10 maps from bootstrap samples, calculated in parallel
-stab <- eemsom_stability(eem_list, som, nrep = 10, cores = cores)
+stab <- eemsom_stability(eem_list, som, nrep = 10, seed = 42, cores = cores)
 stab
 eemsom_plot_stability(stab)
 ```
@@ -306,7 +306,7 @@ Unusual samples often occupy a unit alone (`hits` = 1) that is separated from th
 
 ```{r}
 # one map without each sample
-loo <- eemsom_stability(eem_all, som_all, type = "loo", nrep = 1, cores = cores)
+loo <- eemsom_stability(eem_all, som_all, type = "loo", nrep = 1, seed = 42, cores = cores)
 loo
 ```
 

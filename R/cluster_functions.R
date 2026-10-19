@@ -5,7 +5,7 @@
 #' @param som object of class eemsom, see \code{\link{eemsom}}
 #' @param k number of clusters, see \code{\link{eemsom_kselect}} for help choosing k
 #' @param method \code{"complete"} (default, Ejarque-Gonzalez and Butturini 2014) or any other method of \code{\link[stats]{hclust}}, or \code{"kmeans"}
-#' @param seed seed for the random number generator, only used for \code{method = "kmeans"}
+#' @param seed seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.
 #'
 #' @return object of class eemsom with the cluster of each unit in the element \code{clusters}
 #' @export
@@ -26,7 +26,7 @@
 #' som <- eemsom_cluster(som, k = 3)
 #' eemsom_samples(som)
 #' eemsom_plot_map(som, type = "cluster")
-eemsom_cluster <- function(som, k, method = "complete", seed = 42){
+eemsom_cluster <- function(som, k, method = "complete", seed = NULL){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   som$clusters <- eemsom_clusterunits(som$som$codes[[1]], k = k, method = method, seed = seed)
   som
@@ -39,7 +39,7 @@ eemsom_cluster <- function(som, k, method = "complete", seed = 42){
 #' @param som object of class eemsom, see \code{\link{eemsom}}
 #' @param k numeric vector of numbers of clusters to be tested
 #' @param method clustering method, see \code{\link{eemsom_cluster}}
-#' @param seed seed for the random number generator, only used for \code{method = "kmeans"}
+#' @param seed seed for the random number generator, only used for \code{method = "kmeans"}. With \code{NULL} (default), the current random number stream of the session is used. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards.
 #'
 #' @details
 #' \itemize{
@@ -67,7 +67,7 @@ eemsom_cluster <- function(som, k, method = "complete", seed = 42){
 #'
 #' som <- eemsom(eem_list, rlen = 100)
 #' eemsom_kselect(som, k = 2:6)
-eemsom_kselect <- function(som, k = 2:9, method = "complete", seed = 42){
+eemsom_kselect <- function(som, k = 2:9, method = "complete", seed = NULL){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   eemsom_kcriteria(som$som$codes[[1]], k = k, method = method, seed = seed)
 }
@@ -230,7 +230,7 @@ eemsom_predict <- function(som, eem_list, cores = 1, ...){
 #'
 #' @return integer vector of clusters
 #' @noRd
-eemsom_clusterunits <- function(codes, k, method = "complete", seed = 42){
+eemsom_clusterunits <- function(codes, k, method = "complete", seed = NULL){
   if(!is.numeric(k) || length(k) != 1 || k < 1 || k > nrow(codes)) stop("k needs to be a number between 1 and the number of units (", nrow(codes), ")!")
   hc_methods <- c("ward.D", "ward.D2", "single", "complete", "average", "mcquitty", "median", "centroid")
   method <- match.arg(method, c(hc_methods, "kmeans"))
@@ -251,7 +251,7 @@ eemsom_clusterunits <- function(codes, k, method = "complete", seed = 42){
 #'
 #' @return data frame
 #' @noRd
-eemsom_kcriteria <- function(codes, k, method = "complete", seed = 42){
+eemsom_kcriteria <- function(codes, k, method = "complete", seed = NULL){
   k <- k[k >= 2 & k < nrow(codes)]
   if(length(k) == 0) stop("k needs to be at least 2 and smaller than the number of units (", nrow(codes), ")!")
   d <- dist(codes)

@@ -7,7 +7,7 @@
 #' @param type \code{"bootstrap"} (default, de Bodt et al. 2002) or \code{"loo"} (leave-one-out, Ejarque-Gonzalez and Butturini 2014)
 #' @param nrep number of maps (\code{type = "bootstrap"}) or number of maps per left-out sample (\code{type = "loo"})
 #' @param radius two samples are neighbours if their units are not more than \code{radius} units apart
-#' @param seed seed for the random number generator to get reproducible results
+#' @param seed seed for the random number generator. With \code{NULL} (default), the current random number stream of the session is used, so \code{\link{set.seed}} before the call gives reproducible results. With a number, the seed is set for this calculation only and the random number state of the session is restored afterwards. Each map gets its own seed drawn from this stream, so the result does not depend on \code{cores}.
 #' @param cores number of parallel calculations
 #' @param verbose print infos, with \code{cores = 1} also the progress
 #'
@@ -54,7 +54,7 @@
 #' stab <- eemsom_stability(eem_list, som, nrep = 10, cores = 2)
 #' eemsom_plot_stability(stab)
 #' }
-eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radius = 1, seed = 42, cores = 1, verbose = FALSE){
+eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radius = 1, seed = NULL, cores = 1, verbose = FALSE){
   if(!inherits(som, "eemsom")) stop("som needs to be of class eemsom!")
   eempf_som_unsupported(som, "eemsom_stability")
   type <- match.arg(type, c("bootstrap", "loo"))
@@ -94,7 +94,8 @@ eemsom_stability <- function(eem_list, som, type = "bootstrap", nrep = 20, radiu
     codes <- parLapply(cl, tasks, worker, mat = mat, args = args)
   } else {
     report <- unique(ceiling(seq(0.1, 1, by = 0.1) * length(tasks)))
-    codes <- with_seed(seed, lapply(seq_along(tasks), function(t){
+    # the worker sets the seed of each map, the state of the session is kept
+    codes <- with_preserved_seed(lapply(seq_along(tasks), function(t){
       res <- eemsom_stabilityworker(tasks[[t]], mat = mat, args = args)
       if(verbose && t %in% report) cat(paste0(t, " of ", length(tasks), " maps calculated."), fill = TRUE)
       res
