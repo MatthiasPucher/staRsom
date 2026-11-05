@@ -1,0 +1,9 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  SOM_analysis_of_EEM: SOM_analysis_of_EEM.html
+last_built: 2026-11-05T20:32Z
+urls:
+  reference: https://matthiaspucher.github.io/staRsom/reference
+  article: https://matthiaspucher.github.io/staRsom/articles
