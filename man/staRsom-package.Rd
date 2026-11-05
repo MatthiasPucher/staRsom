@@ -21,6 +21,7 @@ Pucher, M., Wünsch, U., Weigelhofer, G., Murphy, K., Hein, T., Graeber, D. (201
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://matthiaspucher.github.io/staRsom/}
   \item \url{https://github.com/MatthiasPucher/staRsom}
   \item Report bugs at \url{https://github.com/MatthiasPucher/staRsom/issues}
 }

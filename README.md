@@ -52,7 +52,7 @@ vignette("SOM_analysis_of_EEM", package = "staRsom")
 
 ## Citation
 
-Please cite staRsom and the method paper of Ejarque-Gonzalez and Butturini (2014), see `citation("staRsom")`.
+Please cite staRsom (`citation("staRsom")`) and the method paper of Ejarque-Gonzalez and Butturini (2014).
 
 ## Development
 
